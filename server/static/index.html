@@ -10,12 +10,12 @@
 
   :root {
     --bg-black: #000000;
-    --bg-panel: rgba(8, 8, 8, 0.88);
-    --bg-overlay: rgba(4, 4, 4, 0.85);
+    --bg-panel: rgba(8, 8, 8, 0.9);
+    --bg-term-overlay: rgba(3, 3, 3, 0.82);
     --red: #ff0033;
     --red-dark: #88001b;
     --red-dim: rgba(255, 0, 51, 0.15);
-    --red-glow: rgba(255, 0, 51, 0.4);
+    --red-glow: rgba(255, 0, 51, 0.45);
     --white: #ffffff;
     --gray: #999999;
     --gray-dim: #444444;
@@ -36,7 +36,7 @@
     letter-spacing: 0.3px;
   }
 
-  /* DARK RED ASCII WAVE CANVAS */
+  /* DARK RED ASCII WAVE CANVAS BACKGROUND */
   #wave-canvas {
     position: fixed;
     top: 0;
@@ -48,11 +48,11 @@
     opacity: 0.38;
   }
 
-  /* TOP HUD */
+  /* TOP HUD HEADER */
   #top-hud {
     position: relative;
     z-index: 10;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.92);
     padding: 6px 16px;
     display: flex;
     align-items: center;
@@ -105,11 +105,15 @@
     background: #ffffff;
     color: #000000;
   }
+  .btn-solid.active-toggle {
+    background: var(--red);
+    color: #000000;
+  }
   .btn-solid.primary-action {
     background: rgba(255, 0, 51, 0.25);
     border: 1px solid var(--red);
     color: #ffffff;
-    padding: 5px 14px;
+    padding: 6px 14px;
   }
   .btn-solid.primary-action:hover {
     background: var(--red);
@@ -131,26 +135,27 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 10px 16px;
-    gap: 10px;
+    padding: 8px 12px;
     overflow: hidden;
   }
 
-  /* TOP SECTION: WEBRTC PREVIEW (LEFT) + ASCII & TARGET INFO & PRIMARY BUTTONS (RIGHT) */
+  /* TOP SECTION: WEBRTC PREVIEW (EXPANDED) + RIGHT CONTROLS & ASCII */
   #top-preview-box {
+    height: 340px;
+    min-height: 180px;
     background: var(--bg-panel);
     border-radius: 3px;
-    padding: 10px 14px;
-    display: grid;
-    grid-template-columns: 360px 1fr;
-    gap: 16px;
+    padding: 8px 10px;
+    display: flex;
+    overflow: hidden;
     backdrop-filter: blur(6px);
-    border-bottom: 1px solid rgba(255, 0, 51, 0.15);
-    height: 220px;
   }
 
-  /* WEBRTC STREAM PREVIEW */
+  /* WEBRTC STREAM CONTAINER (LARGE, 16:9 FIXED ASPECT RATIO) */
   #webrtc-stream-pane {
+    width: 620px;
+    min-width: 280px;
+    height: 100%;
     background: #000000;
     border-radius: 3px;
     display: flex;
@@ -158,7 +163,19 @@
     justify-content: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.85);
+  }
+
+  .video-aspect-wrapper {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
   }
 
   video-stream {
@@ -169,39 +186,174 @@
     justify-content: center;
   }
   video-stream video {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
+    aspect-ratio: 16 / 9;
   }
 
-  /* RIGHT OF WEBRTC: 1) ASCII BANNER, 2) TARGET INFO, 3) PRIMARY BUTTONS & ACTIONS */
+  /* SEMI-TRANSPARENT TERMINAL OVERLAY DIRECTLY OVER WEBRTC WINDOW */
+  #stream-terminal-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-term-overlay);
+    backdrop-filter: blur(8px);
+    z-index: 25;
+    display: none;
+    flex-direction: column;
+    border: 1px solid rgba(255, 0, 51, 0.35);
+    border-radius: 3px;
+  }
+  #stream-terminal-overlay.visible {
+    display: flex;
+  }
+
+  .overlay-term-topbar {
+    background: rgba(15, 15, 15, 0.95);
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(255, 0, 51, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .ott-title {
+    color: var(--red);
+  }
+  .ott-close {
+    background: transparent;
+    border: 1px solid var(--red-dark);
+    color: var(--red);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .ott-close:hover {
+    background: var(--red);
+    color: #000;
+  }
+
+  #pty-screen-overlay {
+    flex: 1;
+    padding: 8px 10px;
+    overflow-y: auto;
+    font-family: inherit;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: #eaeaea;
+    white-space: pre-wrap;
+    word-break: break-all;
+    outline: none;
+  }
+
+  .overlay-term-input-strip {
+    background: rgba(10, 10, 10, 0.95);
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .ott-prompt {
+    color: var(--red);
+    font-weight: 700;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .ott-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 11.5px;
+    outline: none;
+  }
+
+  /* DRAGGABLE RESIZERS */
+  .resizer-top-h {
+    width: 10px;
+    cursor: col-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    transition: background 0.15s;
+  }
+  .resizer-top-h::after {
+    content: "";
+    width: 2px;
+    height: 36px;
+    background: rgba(255, 0, 51, 0.3);
+    border-radius: 1px;
+  }
+  .resizer-top-h:hover, .resizer-top-h.dragging {
+    background: rgba(255, 0, 51, 0.15);
+  }
+  .resizer-top-h:hover::after, .resizer-top-h.dragging::after {
+    background: var(--red);
+    box-shadow: 0 0 8px var(--red);
+  }
+
+  .resizer-v {
+    height: 10px;
+    cursor: row-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    transition: background 0.15s;
+  }
+  .resizer-v::after {
+    content: "";
+    width: 60px;
+    height: 2px;
+    background: rgba(255, 0, 51, 0.3);
+    border-radius: 1px;
+  }
+  .resizer-v:hover, .resizer-v.dragging {
+    background: rgba(255, 0, 51, 0.15);
+  }
+  .resizer-v:hover::after, .resizer-v.dragging::after {
+    background: var(--red);
+    box-shadow: 0 0 8px var(--red);
+  }
+
+  /* RIGHT OF WEBRTC: ASCII BANNER, TARGET INFO, ACTIONS */
   #banner-controls-pane {
+    flex: 1;
+    min-width: 280px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
+    padding-left: 6px;
   }
 
-  /* SLANT ASCII ART BANNER */
+  /* CLEAN, CRISP ASCII ART BANNER */
   #ascii-banner-art {
     color: var(--red);
     font-family: var(--font-bash);
-    font-size: 10px;
-    line-height: 10px;
+    font-size: 11px;
+    line-height: 12px;
     font-weight: 700;
     white-space: pre;
     margin: 0;
-    text-shadow: 0 0 8px rgba(255, 0, 51, 0.4);
+    text-shadow: 0 0 8px rgba(255, 0, 51, 0.45);
   }
 
   /* TARGET INFO UNDER ASCII BANNER */
   .target-info-strip {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 5px 0;
+    padding: 6px 0;
   }
   .ti-name {
     color: var(--white);
@@ -215,14 +367,14 @@
     color: var(--gray);
     font-size: 11px;
     display: flex;
-    gap: 12px;
+    gap: 14px;
   }
 
-  /* PRIMARY BUTTONS + ACTIONS ROW */
+  /* PRIMARY & SECONDARY ACTIONS */
   .actions-master-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
   .primary-action-row {
     display: flex;
@@ -234,9 +386,10 @@
     flex-wrap: wrap;
   }
 
-  /* BOTTOM FULL-WIDTH SERVERS LIST TABLE */
+  /* BOTTOM SERVERS LIST TABLE */
   #servers-table-pane {
     flex: 1;
+    min-height: 120px;
     background: var(--bg-panel);
     border-radius: 3px;
     display: flex;
@@ -302,103 +455,6 @@
   .c-red { color: var(--red); font-weight: 700; }
   .c-white { color: var(--white); font-weight: 700; }
   .c-dim { color: var(--gray-dim); }
-
-  /* FLOATING SEMI-TRANSPARENT OVERLAY TERMINAL MODAL */
-  #terminal-overlay-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(6px);
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-  #terminal-overlay-modal.active {
-    display: flex;
-  }
-
-  .terminal-floating-window {
-    width: 860px;
-    height: 540px;
-    max-width: 94vw;
-    max-height: 88vh;
-    background: var(--bg-overlay);
-    border: 1px solid var(--red);
-    box-shadow: 0 0 25px rgba(255, 0, 51, 0.35);
-    border-radius: 4px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    backdrop-filter: blur(12px);
-  }
-
-  .term-window-topbar {
-    background: rgba(15, 15, 15, 0.95);
-    padding: 8px 12px;
-    border-bottom: 1px solid rgba(255, 0, 51, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-weight: 700;
-  }
-  .twt-title {
-    color: var(--red);
-    font-size: 12px;
-  }
-  .twt-close-btn {
-    background: transparent;
-    border: 1px solid var(--red-dark);
-    color: var(--red);
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 7px;
-    cursor: pointer;
-    border-radius: 2px;
-  }
-  .twt-close-btn:hover {
-    background: var(--red);
-    color: #000;
-  }
-
-  #pty-screen-floating {
-    flex: 1;
-    padding: 12px;
-    overflow-y: auto;
-    font-family: inherit;
-    font-size: 12px;
-    line-height: 1.45;
-    color: #eaeaea;
-    white-space: pre-wrap;
-    word-break: break-all;
-    outline: none;
-    background: transparent;
-  }
-
-  .term-floating-input-strip {
-    background: rgba(10, 10, 10, 0.95);
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .prompt-tag {
-    color: var(--red);
-    font-weight: 700;
-    white-space: nowrap;
-    font-size: 12px;
-  }
-  .term-floating-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--white);
-    font-family: inherit;
-    font-size: 12px;
-    outline: none;
-  }
 </style>
 </head>
 <body>
@@ -420,36 +476,54 @@
 <!-- MAIN WORKSPACE -->
 <div id="main-workspace">
 
-  <!-- TOP ACTIVE SERVER PANEL (WEBRTC PREVIEW + ASCII & BUTTONS) -->
+  <!-- TOP RESIZABLE SECTION: WEBRTC PREVIEW (LEFT) + ASCII & BUTTONS (RIGHT) -->
   <div id="top-preview-box">
     
-    <!-- LEFT: WEBRTC STREAM PREVIEW -->
+    <!-- LEFT: LARGE WEBRTC STREAM PREVIEW CONTAINER -->
     <div id="webrtc-stream-pane">
-      <div id="stream-placeholder" style="color: var(--gray-dim); font-size: 11px; text-align: center;">[!] Select a node from the list to start WebRTC stream</div>
+      <div class="video-aspect-wrapper">
+        <div id="stream-placeholder" style="color: var(--gray-dim); font-size: 12px; text-align: center;">[!] Select a node from the list to start WebRTC stream</div>
+      </div>
+
+      <!-- SEMI-TRANSPARENT TERMINAL OVERLAY DIRECTLY OVER WEBRTC STREAM -->
+      <div id="stream-terminal-overlay">
+        <div class="overlay-term-topbar">
+          <div class="ott-title" id="overlay-term-title">INTERACTIVE PTY // HUD OVERLAY</div>
+          <button class="ott-close" onclick="toggleTerminalOverlay()">[X] CLOSE (ESC)</button>
+        </div>
+        <div id="pty-screen-overlay" tabindex="0">[*] Interactive terminal session attached.</div>
+        <div class="overlay-term-input-strip">
+          <div class="ott-prompt" id="overlay-prompt-tag">m4r></div>
+          <input type="text" class="ott-input" id="overlay-term-input" placeholder="Type shell command..." onkeydown="handleOverlayTermKey(event)">
+        </div>
+      </div>
     </div>
 
-    <!-- RIGHT: ASCII BANNER, TARGET INFO, AND PRIMARY BUTTONS -->
+    <!-- HORIZONTAL RESIZER BETWEEN WEBRTC PREVIEW AND CONTROLS -->
+    <div class="resizer-top-h" id="resizer-top-h"></div>
+
+    <!-- RIGHT: ASCII BANNER, TARGET INFO, AND ACTION BUTTONS -->
     <div id="banner-controls-pane">
       
-      <!-- 1. SLANT ASCII ART BANNER -->
+      <!-- 1. CLEAN & SHARP ASCII ART BANNER -->
       <pre id="ascii-banner-art">
-   __  ___ ___   ___  __ __  __  __ ___   ___  ___ 
-  /  |/  // _ | / _ \/ // / / / / // _ \ / _ \/ _ \
- / /|_/ // __ |/ , _/__  __/ /_/ // // // __// , _/
-/_/  /_//_/ |_/_/|_|  /_/  \____//____//___//_/|_| 
+ __  __   _   ___ _ _  _   _ ___  ___ ___ 
+|  \/  | /_\ | _ \ | || | | |   \| __| _ \
+| |\/| |/ _ \|   /_  _| |_| | |) | _||   /
+|_|  |_/_/ \_\_|_\|_|  \___/|___/|___|_|_\
       </pre>
 
-      <!-- 2. TARGET INFO (UNDER ASCII BANNER) -->
+      <!-- 2. TARGET INFO (PLACED UNDER ASCII BANNER) -->
       <div class="target-info-strip">
         <div class="ti-name" id="selected-title">TARGET: <span>[NO NODE SELECTED]</span></div>
         <div class="ti-specs" id="selected-specs">IP: 0.0.0.0 | User: - | Ping: 0ms | OS: -</div>
       </div>
 
-      <!-- 3. PRIMARY BUTTONS (FULLSCREEN & TERMINAL) + SECONDARY ACTIONS -->
+      <!-- 3. PRIMARY & SECONDARY ACTION BUTTONS -->
       <div class="actions-master-group">
         <div class="primary-action-row">
           <button class="btn-solid primary-action" onclick="toggleFullscreenStream()">[ ПОЛНОЭКРАННЫЙ РЕЖИМ ]</button>
-          <button class="btn-solid primary-action" onclick="openTerminalOverlay()">[ ТЕРМИНАЛ ]</button>
+          <button class="btn-solid primary-action" id="btn-toggle-term" onclick="toggleTerminalOverlay()">[ ТЕРМИНАЛ ]</button>
         </div>
         <div class="secondary-action-row">
           <button class="btn-solid" onclick="pingTarget()">PING</button>
@@ -464,6 +538,9 @@
     </div>
 
   </div>
+
+  <!-- VERTICAL RESIZER BETWEEN TOP SECTION AND BOTTOM TABLE -->
+  <div class="resizer-v" id="resizer-v"></div>
 
   <!-- BOTTOM FULL-WIDTH SERVERS LIST TABLE -->
   <div id="servers-table-pane">
@@ -487,23 +564,8 @@
 
 </div>
 
-<!-- FLOATING SEMI-TRANSPARENT OVERLAY TERMINAL -->
-<div id="terminal-overlay-modal">
-  <div class="terminal-floating-window">
-    <div class="term-window-topbar">
-      <div class="twt-title" id="term-modal-title">INTERACTIVE PTY // TERMINAL</div>
-      <button class="twt-close-btn" onclick="closeTerminalOverlay()">[X] CLOSE (ESC)</button>
-    </div>
-    <div id="pty-screen-floating" tabindex="0">[*] Interactive terminal session ready.</div>
-    <div class="term-floating-input-strip">
-      <div class="prompt-tag" id="term-floating-prompt">m4r></div>
-      <input type="text" class="term-floating-input" id="term-floating-input" placeholder="Enter shell command..." onkeydown="handleFloatingTermKey(event)">
-    </div>
-  </div>
-</div>
-
 <script>
-  // MOCK SERVERS FALLBACK POOL
+  // MOCK SERVERS POOL FALLBACK
   const mockNodes = [
     { id: "mos-ku1eet", hostname: "mos-ku1eet", ip: "192.168.10.14", slot: 1, is_online: true, is_root: false, username: "student", os: "Linux", arch: "x86_64", ping_ms: 12 },
     { id: "mos-81141a", hostname: "mos-81141a", ip: "10.8.0.52", slot: 2, is_online: true, is_root: true, username: "root", os: "Linux", arch: "x86_64", ping_ms: 24 },
@@ -516,6 +578,7 @@
   let nodes = [];
   let selectedNode = null;
   let termWS = null;
+  let isTerminalOpen = false;
 
   // DARK RED ASCII WAVE CANVAS
   const canvas = document.getElementById('wave-canvas');
@@ -556,6 +619,61 @@
     requestAnimationFrame(renderWave);
   }
   renderWave();
+
+  // INTERACTIVE RESIZERS
+  function initResizers() {
+    // 1. Horizontal Resizer: WebRTC stream width vs Right banner/controls
+    const resizerTopH = document.getElementById('resizer-top-h');
+    const streamPane = document.getElementById('webrtc-stream-pane');
+    const topParent = document.getElementById('top-preview-box');
+
+    resizerTopH.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      resizerTopH.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+
+      function onMouseMove(e) {
+        const parentRect = topParent.getBoundingClientRect();
+        const newWidth = Math.max(260, Math.min(parentRect.width - 260, e.clientX - parentRect.left));
+        streamPane.style.width = `${newWidth}px`;
+      }
+      function onMouseUp() {
+        resizerTopH.classList.remove('dragging');
+        document.body.style.cursor = '';
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      }
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+
+    // 2. Vertical Resizer: Top section height vs Bottom servers table height
+    const resizerV = document.getElementById('resizer-v');
+    const topBox = document.getElementById('top-preview-box');
+
+    resizerV.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      resizerV.classList.add('dragging');
+      document.body.style.cursor = 'row-resize';
+
+      const startY = e.clientY;
+      const startHeight = topBox.offsetHeight;
+
+      function onMouseMove(e) {
+        const newHeight = Math.max(160, Math.min(window.innerHeight - 160, startHeight + (e.clientY - startY)));
+        topBox.style.height = `${newHeight}px`;
+      }
+      function onMouseUp() {
+        resizerV.classList.remove('dragging');
+        document.body.style.cursor = '';
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      }
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+  }
+  initResizers();
 
   // DATA FETCHING
   async function refreshAll() {
@@ -604,7 +722,7 @@
       const isSel = selectedNode && selectedNode.id === n.id;
       row.className = 'server-row' + (isSel ? ' selected' : '');
       row.onclick = () => selectNode(n);
-      row.ondblclick = () => { selectNode(n); openTerminalOverlay(); };
+      row.ondblclick = () => { selectNode(n); toggleTerminalOverlay(true); };
 
       const statusHtml = n.is_online ? '<span class="c-red">[ONLINE]</span>' : '<span class="c-dim">[OFFLINE]</span>';
       const rootHtml = n.is_root ? '<span class="c-red">root #</span>' : `${n.username || 'user'} $`;
@@ -632,12 +750,12 @@
     // Update Header
     document.getElementById('selected-title').innerHTML = `TARGET: <span>[#${n.slot || 1}] ${n.hostname || n.id}</span>`;
     document.getElementById('selected-specs').innerText = `IP: ${n.ip || '0.0.0.0'} | User: ${n.is_root ? 'root' : (n.username || 'user')} | Ping: ${n.ping_ms || 0}ms | OS: ${n.os || 'Linux'}`;
-    document.getElementById('term-floating-prompt').innerText = `m4r:${n.hostname || n.id}>`;
-    document.getElementById('term-modal-title').innerText = `INTERACTIVE PTY // [${n.hostname || n.id}] (${n.ip})`;
+    document.getElementById('overlay-prompt-tag').innerText = `m4r:${n.hostname || n.id}>`;
+    document.getElementById('overlay-term-title').innerText = `PTY OVERLAY // [${n.hostname || n.id}] (${n.ip})`;
 
     // WebRTC Stream Preview
     const port = n.webrtc_port || (1984 + (n.slot || 1) - 1);
-    const box = document.getElementById('webrtc-stream-pane');
+    const box = document.querySelector('.video-aspect-wrapper');
     box.innerHTML = `<video-stream src="http://${window.location.hostname}:${port}/api/ws?src=desktop_slot_${n.slot || 1}"></video-stream>`;
 
     // Connect Terminal
@@ -650,14 +768,14 @@
       termWS.close();
       termWS = null;
     }
-    const out = document.getElementById('pty-screen-floating');
+    const out = document.getElementById('pty-screen-overlay');
     out.innerText = `[*] Connecting interactive PTY to [${nodeId}]...\n`;
 
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     termWS = new WebSocket(`${wsProto}//${window.location.host}/ws/terminal?node=${nodeId}`);
 
     termWS.onopen = () => {
-      out.innerText += `[+] PTY session established for [${nodeId}]. Ready for interactive shell.\n`;
+      out.innerText += `[+] PTY session established for [${nodeId}]. Ready.\n`;
     };
     termWS.onmessage = (e) => {
       out.innerText += e.data;
@@ -674,9 +792,9 @@
     }
   }
 
-  function handleFloatingTermKey(e) {
+  function handleOverlayTermKey(e) {
     if (e.key === 'Enter') {
-      const input = document.getElementById('term-floating-input');
+      const input = document.getElementById('overlay-term-input');
       const val = input.value.trim();
       input.value = '';
       if (!val) return;
@@ -684,16 +802,25 @@
     }
   }
 
-  // TERMINAL OVERLAY CONTROLS
-  function openTerminalOverlay() {
-    document.getElementById('terminal-overlay-modal').classList.add('active');
-    setTimeout(() => {
-      document.getElementById('term-floating-input').focus();
-    }, 50);
-  }
-
-  function closeTerminalOverlay() {
-    document.getElementById('terminal-overlay-modal').classList.remove('active');
+  // TERMINAL OVERLAY TOGGLE
+  function toggleTerminalOverlay(forceState) {
+    if (typeof forceState === 'boolean') {
+      isTerminalOpen = forceState;
+    } else {
+      isTerminalOpen = !isTerminalOpen;
+    }
+    const overlay = document.getElementById('stream-terminal-overlay');
+    const btn = document.getElementById('btn-toggle-term');
+    if (isTerminalOpen) {
+      overlay.classList.add('visible');
+      btn.classList.add('active-toggle');
+      setTimeout(() => {
+        document.getElementById('overlay-term-input').focus();
+      }, 50);
+    } else {
+      overlay.classList.remove('visible');
+      btn.classList.remove('active-toggle');
+    }
   }
 
   function toggleFullscreenStream() {
@@ -705,17 +832,16 @@
     }
   }
 
-  // ESC KEY LISTENER TO CLOSE OVERLAY
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeTerminalOverlay();
+    if (e.key === 'Escape' && isTerminalOpen) {
+      toggleTerminalOverlay(false);
     }
   });
 
   // ACTIONS
   async function pingTarget() {
     if (!selectedNode) return;
-    const out = document.getElementById('pty-screen-floating');
+    const out = document.getElementById('pty-screen-overlay');
     out.innerText += `\n[*] Pinging [${selectedNode.id}]...\n`;
     const t0 = performance.now();
     try {
@@ -728,7 +854,7 @@
 
   async function updateTarget() {
     if (!selectedNode) return;
-    const out = document.getElementById('pty-screen-floating');
+    const out = document.getElementById('pty-screen-overlay');
     out.innerText += `\n[*] Upgrading binary on node [${selectedNode.id}]...\n`;
     try {
       const res = await fetch(`/api/v1/nodes/${selectedNode.id}/update`, {method: 'POST'});
