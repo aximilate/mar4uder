@@ -37,10 +37,13 @@ function Start-TcpConsole {
         [string]$HostName,
         [int]$Port
     )
-    Write-Host "[*] Connecting to MAR4UDER Console ($HostName`:$Port)..." -ForegroundColor Cyan
-    Write-Host "[*] Type node number or ID to attach. Use 'help' inside console.`n" -ForegroundColor DarkGray
 
-    # If nc or ncat exists in PATH, use it for optimal terminal rendering
+    $cmdPy = Join-Path $PSScriptRoot "command.py"
+    if (Test-Path $cmdPy) {
+        python $cmdPy console
+        return
+    }
+
     if (Get-Command ncat -ErrorAction SilentlyContinue) {
         ncat $HostName $Port
         return
@@ -50,78 +53,86 @@ function Start-TcpConsole {
         return
     }
 
-    try {
-        $client = New-Object System.Net.Sockets.TcpClient
-        $client.NoDelay = $true
-        $client.Connect($HostName, $Port)
-        $stream = $client.GetStream()
-        $rawBytes = New-Object byte[] 4096
-        
-        $cancelSource = New-Object System.Threading.CancellationTokenSource
-        $task = [System.Threading.Tasks.Task]::Run([Action]{
-            try {
-                while (-not $cancelSource.IsCancellationRequested -and $client.Connected) {
-                    if ($stream.DataAvailable) {
-                        $bytesRead = $stream.Read($rawBytes, 0, $rawBytes.Length)
-                        if ($bytesRead -gt 0) {
-                            $text = [System.Text.Encoding]::UTF8.GetString($rawBytes, 0, $bytesRead)
-                            [Console]::Write($text)
-                        } else {
-                            break
+    $csharpCode = @"
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+
+public class M4rSocketConsole {
+    public static void Connect(string host, int port) {
+        Console.WriteLine("[*] Connecting to MAR4UDER Console ({0}:{1})...", host, port);
+        try {
+            using (var client = new TcpClient()) {
+                client.NoDelay = true;
+                client.Connect(host, port);
+                var stream = client.GetStream();
+                var running = true;
+
+                var readThread = new Thread(() => {
+                    byte[] buffer = new byte[4096];
+                    try {
+                        while (running && client.Connected) {
+                            int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                            if (bytesRead > 0) {
+                                Console.Write(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                            } else {
+                                break;
+                            }
+                        }
+                    } catch {}
+                    running = false;
+                });
+                readThread.IsBackground = true;
+                readThread.Start();
+
+                while (running && client.Connected) {
+                    if (Console.KeyAvailable) {
+                        var key = Console.ReadKey(true);
+                        if (key.Key == ConsoleKey.C && (key.Modifiers & ConsoleModifiers.Control) != 0) {
+                            stream.Write(new byte[] { 3 }, 0, 1);
+                            stream.Flush();
+                        } else if (key.Key == ConsoleKey.Enter) {
+                            byte[] crlf = Encoding.UTF8.GetBytes("\r\n");
+                            stream.Write(crlf, 0, crlf.Length);
+                            stream.Flush();
+                        } else if (key.Key == ConsoleKey.Backspace) {
+                            stream.Write(new byte[] { 8 }, 0, 1);
+                            stream.Flush();
+                        } else if (key.Key == ConsoleKey.Tab) {
+                            stream.Write(new byte[] { 9 }, 0, 1);
+                            stream.Flush();
+                        } else if (key.Key == ConsoleKey.Escape) {
+                            stream.Write(new byte[] { 27 }, 0, 1);
+                            stream.Flush();
+                        } else if (key.KeyChar != 0) {
+                            byte[] bytes = Encoding.UTF8.GetBytes(key.KeyChar.ToString());
+                            stream.Write(bytes, 0, bytes.Length);
+                            stream.Flush();
                         }
                     } else {
-                        [System.Threading.Thread]::Sleep(10)
+                        Thread.Sleep(10);
                     }
                 }
-            } catch {}
-        }, $cancelSource.Token)
-
-        while ($client.Connected) {
-            if ([Console]::KeyAvailable) {
-                $key = [Console]::ReadKey($true)
-                if ($key.Key -eq [ConsoleKey]::C -and ($key.Modifiers -band [ConsoleModifiers]::Control)) {
-                    $sendBytes = [byte[]]@(3)
-                    $stream.Write($sendBytes, 0, 1)
-                    $stream.Flush()
-                } elseif ($key.Key -eq [ConsoleKey]::Enter) {
-                    $sendBytes = [System.Text.Encoding]::UTF8.GetBytes("`r`n")
-                    $stream.Write($sendBytes, 0, $sendBytes.Length)
-                    $stream.Flush()
-                } elseif ($key.Key -eq [ConsoleKey]::Backspace) {
-                    $sendBytes = [byte[]]@(8)
-                    $stream.Write($sendBytes, 0, 1)
-                    $stream.Flush()
-                } elseif ($key.Key -eq [ConsoleKey]::Tab) {
-                    $sendBytes = [byte[]]@(9)
-                    $stream.Write($sendBytes, 0, 1)
-                    $stream.Flush()
-                } elseif ($key.Key -eq [ConsoleKey]::Escape) {
-                    $sendBytes = [byte[]]@(27)
-                    $stream.Write($sendBytes, 0, 1)
-                    $stream.Flush()
-                } else {
-                    $char = $key.KeyChar
-                    if ($char -ne 0) {
-                        $sendBytes = [System.Text.Encoding]::UTF8.GetBytes($char.ToString())
-                        $stream.Write($sendBytes, 0, $sendBytes.Length)
-                        $stream.Flush()
-                    }
-                }
-            } else {
-                [System.Threading.Thread]::Sleep(10)
+                running = false;
             }
+            Console.WriteLine("\n[*] Disconnected.");
+        } catch (Exception ex) {
+            Console.WriteLine("\n[-] Connection error: " + ex.Message);
         }
-
-        $cancelSource.Cancel()
-        $stream.Close()
-        $client.Close()
-        Write-Host "`n[*] Disconnected." -ForegroundColor Yellow
+    }
+}
+"@
+    try {
+        if (-not ([System.Management.Automation.PSTypeName]'M4rSocketConsole').Type) {
+            Add-Type -TypeDefinition $csharpCode -Language CSharp
+        }
+        [M4rSocketConsole]::Connect($HostName, $Port)
     } catch {
-        Write-Host "`n[-] Connection error: $_" -ForegroundColor Red
+        Write-Host "[-] Console launch error: $_" -ForegroundColor Red
     }
 }
 
-# If first arg is a node ID or number, execute default command or route
 switch ($Command.ToLower()) {
     "console" {
         Start-TcpConsole -HostName $ServerHost -Port $NcPort
@@ -259,10 +270,8 @@ switch ($Command.ToLower()) {
     }
 
     default {
-        # Check if first argument is a numeric slot or node ID
         if ($Command -match '^\d+$' -or $Command -match '^mos-') {
             Write-Host "[*] Target node: $Command" -ForegroundColor Cyan
-            # Launch console and auto-route
             Start-TcpConsole -HostName $ServerHost -Port $NcPort
         } else {
             Show-Help
