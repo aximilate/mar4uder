@@ -10,10 +10,11 @@
 
   :root {
     --bg-black: #000000;
-    --bg-panel: rgba(8, 8, 8, 0.85);
+    --bg-panel: rgba(8, 8, 8, 0.88);
     --bg-panel-dark: rgba(3, 3, 3, 0.95);
     --red: #ff0033;
     --red-dark: #88001b;
+    --red-dim: rgba(255, 0, 51, 0.15);
     --red-glow: rgba(255, 0, 51, 0.4);
     --white: #ffffff;
     --gray: #999999;
@@ -35,7 +36,7 @@
     letter-spacing: 0.3px;
   }
 
-  /* DARK RED ASCII WAVE BACKGROUND */
+  /* DARK RED ASCII WAVE CANVAS */
   #wave-canvas {
     position: fixed;
     top: 0;
@@ -47,7 +48,7 @@
     opacity: 0.38;
   }
 
-  /* COMPACT TOP HUD HEADER */
+  /* TOP HUD */
   #top-hud {
     position: relative;
     z-index: 10;
@@ -81,7 +82,7 @@
   .h-val { color: var(--white); font-weight: 700; }
   .h-red { color: var(--red); font-weight: 700; }
 
-  /* SOLID BUTTONS */
+  /* BUTTONS WITH SOLID FILL */
   .btn-solid {
     background: rgba(255, 0, 51, 0.1);
     border: none;
@@ -113,73 +114,124 @@
     color: #000000;
   }
 
-  /* MAIN WORKSPACE GRID: LEFT 1.4fr (TOP WEBRTC+BANNER, BOTTOM TABLE) | RIGHT 1fr (FULL-HEIGHT TERMINAL) */
-  #main-grid {
+  /* RESIZABLE MAIN WORKSPACE CONTAINER */
+  #main-workspace {
     position: relative;
     z-index: 10;
     flex: 1;
-    display: grid;
-    grid-template-columns: 1.45fr 1fr;
-    gap: 12px;
-    padding: 8px 14px;
+    display: flex;
+    padding: 8px 12px;
     overflow: hidden;
   }
 
-  /* LEFT COLUMN */
-  #left-column {
+  /* LEFT SIDE (TOP: WEBRTC+BANNER, BOTTOM: SERVERS LIST) */
+  #left-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
     overflow: hidden;
+    min-width: 320px;
+    width: 60%;
   }
 
-  /* COMPACT TOP BLOCK: WEBRTC (LEFT) + ASCII MAR4UDER & CONTROLS (RIGHT) */
-  #top-preview-banner-box {
+  /* SPLITTER: HORIZONTAL BETWEEN LEFT AND RIGHT (DRAGGABLE) */
+  .resizer-h {
+    width: 8px;
+    cursor: col-resize;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    transition: background 0.15s;
+  }
+  .resizer-h::after {
+    content: "";
+    width: 2px;
+    height: 32px;
+    background: rgba(255, 0, 51, 0.3);
+    border-radius: 1px;
+  }
+  .resizer-h:hover, .resizer-h.dragging {
+    background: rgba(255, 0, 51, 0.15);
+  }
+  .resizer-h:hover::after, .resizer-h.dragging::after {
+    background: var(--red);
+    box-shadow: 0 0 6px var(--red);
+  }
+
+  /* SPLITTER: VERTICAL BETWEEN TOP PREVIEW AND BOTTOM TABLE */
+  .resizer-v {
+    height: 8px;
+    cursor: row-resize;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    transition: background 0.15s;
+  }
+  .resizer-v::after {
+    content: "";
+    width: 40px;
+    height: 2px;
+    background: rgba(255, 0, 51, 0.3);
+    border-radius: 1px;
+  }
+  .resizer-v:hover, .resizer-v.dragging {
+    background: rgba(255, 0, 51, 0.15);
+  }
+  .resizer-v:hover::after, .resizer-v.dragging::after {
+    background: var(--red);
+    box-shadow: 0 0 6px var(--red);
+  }
+
+  /* SPLITTER: HORIZONTAL BETWEEN WEBRTC PREVIEW AND BANNER/CONTROLS */
+  .resizer-top-h {
+    width: 8px;
+    cursor: col-resize;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+  }
+  .resizer-top-h::after {
+    content: "";
+    width: 2px;
+    height: 24px;
+    background: rgba(255, 0, 51, 0.25);
+  }
+  .resizer-top-h:hover, .resizer-top-h.dragging {
+    background: rgba(255, 0, 51, 0.12);
+  }
+  .resizer-top-h:hover::after, .resizer-top-h.dragging::after {
+    background: var(--red);
+  }
+
+  /* TOP BLOCK: WEBRTC PREVIEW (LEFT) + ASCII & CONTROLS (RIGHT) */
+  #top-preview-box {
+    height: 220px;
+    min-height: 140px;
     background: var(--bg-panel);
     border-radius: 3px;
     padding: 8px 10px;
-    display: grid;
-    grid-template-columns: 310px 1fr;
-    gap: 12px;
+    display: flex;
+    overflow: hidden;
     backdrop-filter: blur(6px);
-    border-bottom: 1px solid rgba(255, 0, 51, 0.15);
-    height: 190px;
   }
 
-  /* WEBRTC STREAM PREVIEW WRAPPER WITH ZOOM SUPPORT */
-  #webrtc-stream-card {
+  /* WEBRTC STREAM PREVIEW */
+  #webrtc-stream-pane {
+    width: 320px;
+    min-width: 180px;
     background: #000000;
     border-radius: 3px;
     display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    align-items: center;
+    justify-content: center;
     position: relative;
+    overflow: hidden;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-  }
-
-  #stream-zoom-viewport {
-    flex: 1;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    cursor: grab;
-  }
-  #stream-zoom-viewport:active {
-    cursor: grabbing;
-  }
-
-  #stream-zoom-inner {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform-origin: center center;
-    transition: transform 0.15s ease-out;
   }
 
   video-stream {
@@ -193,90 +245,66 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    pointer-events: none;
   }
 
-  .stream-zoom-bar {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    background: rgba(0, 0, 0, 0.85);
-    padding: 2px 6px;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    z-index: 20;
-    backdrop-filter: blur(4px);
-  }
-  .zoom-btn {
-    background: rgba(255, 0, 51, 0.2);
-    border: none;
-    color: var(--white);
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 1px 5px;
-    cursor: pointer;
-    border-radius: 2px;
-  }
-  .zoom-btn:hover {
-    background: var(--red);
-    color: #000;
-  }
-  .zoom-level-text {
-    font-size: 10px;
-    color: var(--red);
-    font-weight: 700;
-    min-width: 32px;
-    text-align: center;
-  }
-
-  /* RIGHT OF WEBRTC: ASCII MAR4UDER BANNER & TARGET CONTROLS */
-  #banner-controls-card {
+  /* RIGHT OF WEBRTC: 1) ASCII BANNER, 2) TARGET INFO, 3) CONTROLS */
+  #banner-controls-pane {
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
+    padding-left: 4px;
+    min-width: 260px;
   }
 
-  #ascii-banner-txt {
+  /* SLANT/CYBER ASCII ART FOR MAR4UDER */
+  #ascii-banner-art {
     color: var(--red);
     font-family: var(--font-bash);
-    font-size: 8.5px;
-    line-height: 9px;
+    font-size: 10px;
+    line-height: 10px;
     font-weight: 700;
     white-space: pre;
     margin: 0;
-    text-shadow: 0 0 8px rgba(255, 0, 51, 0.35);
+    text-shadow: 0 0 8px rgba(255, 0, 51, 0.4);
   }
 
-  .target-header-strip {
+  /* TARGET INFO UNDER ASCII BANNER */
+  .target-info-strip {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 3px;
+    flex-direction: column;
+    gap: 2px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 4px 0;
   }
-  .th-title {
-    color: var(--red);
-    font-size: 12px;
+  .ti-name {
+    color: var(--white);
+    font-size: 13px;
     font-weight: 700;
   }
-  .th-details {
+  .ti-name span {
+    color: var(--red);
+  }
+  .ti-specs {
     color: var(--gray);
     font-size: 11px;
+    display: flex;
+    gap: 12px;
   }
 
-  .controls-compact-row {
+  /* ACTION BUTTONS UNDER TARGET INFO */
+  .action-buttons-row {
     display: flex;
     gap: 4px;
     flex-wrap: wrap;
   }
 
-  /* SERVERS LIST TABLE (TAKES REMAINING HEIGHT ON LEFT) */
-  #servers-table-box {
+  /* SERVERS LIST TABLE (BOTTOM OF LEFT CONTAINER) */
+  #servers-table-pane {
     flex: 1;
+    min-height: 120px;
     background: var(--bg-panel);
     border-radius: 3px;
     display: flex;
@@ -343,8 +371,10 @@
   .c-white { color: var(--white); font-weight: 700; }
   .c-dim { color: var(--gray-dim); }
 
-  /* RIGHT COLUMN: FULL HEIGHT TERMINAL */
+  /* RIGHT SIDE: FULL HEIGHT TERMINAL WINDOW */
   #terminal-full-panel {
+    flex: 1;
+    min-width: 280px;
     background: var(--bg-panel-dark);
     border-radius: 3px;
     display: flex;
@@ -419,49 +449,42 @@
   </div>
 </div>
 
-<!-- MAIN GRID LAYOUT -->
-<div id="main-grid">
+<!-- MAIN RESIZABLE WORKSPACE -->
+<div id="main-workspace">
 
-  <!-- LEFT COLUMN (PREVIEW + CONTROLS + SERVERS TABLE) -->
-  <div id="left-column">
+  <!-- LEFT COLUMN (CONTAINING TOP WEBRTC+BANNER & BOTTOM TABLE) -->
+  <div id="left-container">
     
-    <!-- TOP COMPACT BLOCK: WEBRTC PREVIEW (LEFT) + ASCII MAR4UDER & CONTROLS (RIGHT) -->
-    <div id="top-preview-banner-box">
+    <!-- TOP BLOCK: WEBRTC PREVIEW (LEFT) + ASCII & TARGET INFO & CONTROLS (RIGHT) -->
+    <div id="top-preview-box">
       
-      <!-- WEBRTC STREAM PREVIEW WITH ZOOM CONTROLS -->
-      <div id="webrtc-stream-card">
-        <div id="stream-zoom-viewport">
-          <div id="stream-zoom-inner">
-            <div id="stream-placeholder" style="color: var(--gray-dim); font-size: 11px; text-align: center;">[!] Select a node to start stream</div>
-          </div>
-        </div>
-        <div class="stream-zoom-bar">
-          <button class="zoom-btn" onclick="zoomStream(-0.25)">-</button>
-          <span class="zoom-level-text" id="zoom-txt">100%</span>
-          <button class="zoom-btn" onclick="zoomStream(0.25)">+</button>
-          <button class="zoom-btn" onclick="resetZoom()">FIT</button>
-          <button class="zoom-btn" onclick="toggleFullscreenStream()">MAX</button>
-        </div>
+      <!-- WEBRTC STREAM PREVIEW -->
+      <div id="webrtc-stream-pane">
+        <div id="stream-placeholder" style="color: var(--gray-dim); font-size: 11px; text-align: center;">[!] Select a node to start WebRTC stream</div>
       </div>
 
-      <!-- RIGHT OF WEBRTC: ASCII MAR4UDER BANNER + CONTROLS -->
-      <div id="banner-controls-card">
-        <div class="target-header-strip">
-          <div class="th-title" id="selected-title">[NO NODE SELECTED]</div>
-          <div class="th-details" id="selected-specs">IP: 0.0.0.0 | Ping: 0ms</div>
-        </div>
+      <!-- RESIZER BETWEEN WEBRTC AND BANNER -->
+      <div class="resizer-top-h" id="resizer-top-h"></div>
 
-        <!-- ASCII MAR4UDER BANNER RIGHT OF WEBRTC -->
-        <pre id="ascii-banner-txt">
-███╗   ███╗ █████╗ ██████╗ ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗ 
-████╗ ████║██╔══██╗██╔══██╗██║  ██║██║   ██║██╔══██╗██╔════╝██╔══██╗
-██╔████╔██║███████║██████╔╝███████║██║   ██║██║  ██║█████╗  ██████╔╝
-██║╚██╔╝██║██╔══██║██╔══██╗╚════██║██║   ██║██║  ██║██╔══╝  ██╔══██╗
-██║ ╚═╝ ██║██║  ██║██║  ██║     ██║╚██████╔╝██████╔╝███████╗██║  ██║
+      <!-- RIGHT SIDE: 1) ASCII BANNER, 2) TARGET INFO STRIP, 3) CONTROLS -->
+      <div id="banner-controls-pane">
+        
+        <!-- 1. SLANT/CYBER ASCII ART BANNER -->
+        <pre id="ascii-banner-art">
+   __  ___ ___   ___  __ __  __  __ ___   ___  ___ 
+  /  |/  // _ | / _ \/ // / / / / // _ \ / _ \/ _ \
+ / /|_/ // __ |/ , _/__  __/ /_/ // // // __// , _/
+/_/  /_//_/ |_/_/|_|  /_/  \____//____//___//_/|_| 
         </pre>
 
-        <!-- ACTION BUTTONS -->
-        <div class="controls-compact-row">
+        <!-- 2. TARGET INFO (PLACED DIRECTLY UNDER ASCII BANNER) -->
+        <div class="target-info-strip">
+          <div class="ti-name" id="selected-title">TARGET: <span>[NO NODE SELECTED]</span></div>
+          <div class="ti-specs" id="selected-specs">IP: 0.0.0.0 | User: - | Ping: 0ms | OS: -</div>
+        </div>
+
+        <!-- 3. ACTION & CONTROL BUTTONS -->
+        <div class="action-buttons-row">
           <button class="btn-solid" onclick="pingTarget()">PING</button>
           <button class="btn-solid" onclick="updateTarget()">UPGRADE</button>
           <button class="btn-solid" onclick="sendTerminalKey('uname -a\n')">SYSINFO</button>
@@ -470,12 +493,16 @@
           <button class="btn-solid" onclick="sendTerminalKey('\x03')">^C</button>
           <button class="btn-solid danger" onclick="uninstallTarget()">UNINSTALL</button>
         </div>
+
       </div>
 
     </div>
 
-    <!-- BOTTOM: SERVERS LIST TABLE -->
-    <div id="servers-table-box">
+    <!-- RESIZER BETWEEN TOP BLOCK AND BOTTOM TABLE -->
+    <div class="resizer-v" id="resizer-v"></div>
+
+    <!-- BOTTOM BLOCK: SERVERS LIST TABLE -->
+    <div id="servers-table-pane">
       <div class="table-title-bar">
         <div>CONNECTED SERVERS MATRIX</div>
         <div id="node-count-label">[0 NODES]</div>
@@ -495,6 +522,9 @@
     </div>
 
   </div>
+
+  <!-- RESIZER BETWEEN LEFT CONTAINER AND RIGHT TERMINAL -->
+  <div class="resizer-h" id="resizer-h"></div>
 
   <!-- RIGHT COLUMN: FULL-HEIGHT TERMINAL WINDOW -->
   <div id="terminal-full-panel">
@@ -525,7 +555,6 @@
   let nodes = [];
   let selectedNode = null;
   let termWS = null;
-  let currentZoom = 1.0;
 
   // DARK RED ASCII WAVE CANVAS
   const canvas = document.getElementById('wave-canvas');
@@ -567,27 +596,85 @@
   }
   renderWave();
 
-  // STREAM ZOOM CONTROLS
-  function zoomStream(delta) {
-    currentZoom = Math.max(0.5, Math.min(3.0, currentZoom + delta));
-    applyZoom();
+  // DRAGGABLE RESIZERS (BLOCK RATIOS ADJUSTMENT)
+  function initResizers() {
+    // 1. Horizontal Resizer (Left container width vs Terminal width)
+    const resizerH = document.getElementById('resizer-h');
+    const leftCol = document.getElementById('left-container');
+    const workspace = document.getElementById('main-workspace');
+
+    resizerH.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      resizerH.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+
+      function onMouseMove(e) {
+        const rect = workspace.getBoundingClientRect();
+        const newWidth = Math.max(300, Math.min(rect.width - 250, e.clientX - rect.left));
+        leftCol.style.width = `${newWidth}px`;
+      }
+      function onMouseUp() {
+        resizerH.classList.remove('dragging');
+        document.body.style.cursor = '';
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      }
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+
+    // 2. Vertical Resizer (Top preview height vs Bottom table height)
+    const resizerV = document.getElementById('resizer-v');
+    const topBox = document.getElementById('top-preview-box');
+
+    resizerV.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      resizerV.classList.add('dragging');
+      document.body.style.cursor = 'row-resize';
+
+      const startY = e.clientY;
+      const startHeight = topBox.offsetHeight;
+
+      function onMouseMove(e) {
+        const newHeight = Math.max(130, Math.min(window.innerHeight - 200, startHeight + (e.clientY - startY)));
+        topBox.style.height = `${newHeight}px`;
+      }
+      function onMouseUp() {
+        resizerV.classList.remove('dragging');
+        document.body.style.cursor = '';
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      }
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+
+    // 3. Top-H Resizer (WebRTC width vs Banner/Controls width)
+    const resizerTopH = document.getElementById('resizer-top-h');
+    const streamPane = document.getElementById('webrtc-stream-pane');
+    const topParent = document.getElementById('top-preview-box');
+
+    resizerTopH.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      resizerTopH.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+
+      function onMouseMove(e) {
+        const parentRect = topParent.getBoundingClientRect();
+        const newWidth = Math.max(160, Math.min(parentRect.width - 240, e.clientX - parentRect.left));
+        streamPane.style.width = `${newWidth}px`;
+      }
+      function onMouseUp() {
+        resizerTopH.classList.remove('dragging');
+        document.body.style.cursor = '';
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      }
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
   }
-  function resetZoom() {
-    currentZoom = 1.0;
-    applyZoom();
-  }
-  function applyZoom() {
-    document.getElementById('stream-zoom-inner').style.transform = `scale(${currentZoom})`;
-    document.getElementById('zoom-txt').innerText = `${Math.round(currentZoom * 100)}%`;
-  }
-  function toggleFullscreenStream() {
-    const el = document.getElementById('webrtc-stream-card');
-    if (!document.fullscreenElement) {
-      el.requestFullscreen().catch(()=>{});
-    } else {
-      document.exitFullscreen().catch(()=>{});
-    }
-  }
+  initResizers();
 
   // DATA FETCHING
   async function refreshAll() {
@@ -660,17 +747,16 @@
   function selectNode(n) {
     selectedNode = n;
     
-    // Update Header
-    document.getElementById('selected-title').innerText = `TARGET: [#${n.slot || 1}] ${n.hostname || n.id}`;
-    document.getElementById('selected-specs').innerText = `IP: ${n.ip || '0.0.0.0'} | User: ${n.is_root ? 'root' : (n.username || 'user')} | Ping: ${n.ping_ms || 0}ms`;
+    // Update Header and info under ASCII
+    document.getElementById('selected-title').innerHTML = `TARGET: <span>[#${n.slot || 1}] ${n.hostname || n.id}</span>`;
+    document.getElementById('selected-specs').innerText = `IP: ${n.ip || '0.0.0.0'} | User: ${n.is_root ? 'root' : (n.username || 'user')} | Ping: ${n.ping_ms || 0}ms | ${n.os || 'Linux'}`;
     document.getElementById('term-prompt-tag').innerText = `m4r:${n.hostname || n.id}>`;
     document.getElementById('term-header-status').innerText = `PTY SESSION // [${n.hostname || n.id}] (${n.ip})`;
 
     // WebRTC Stream Preview
     const port = n.webrtc_port || (1984 + (n.slot || 1) - 1);
-    const box = document.getElementById('stream-zoom-inner');
+    const box = document.getElementById('webrtc-stream-pane');
     box.innerHTML = `<video-stream src="http://${window.location.hostname}:${port}/api/ws?src=desktop_slot_${n.slot || 1}"></video-stream>`;
-    resetZoom();
 
     // Attach Terminal
     attachPty(n.id);
