@@ -39,9 +39,21 @@ func NewAPIServer(cfg *Config, nm *NodeManager, udpGw *UDPGateway, fileMgr *File
 
 // RegisterRoutes registers all REST and WebSocket routes on the mux
 func (api *APIServer) RegisterRoutes(mux *http.ServeMux) {
-	// Web UI & Uploader
+	// Web UI & Static assets
 	mux.HandleFunc("/", api.handleWebUI)
 	mux.HandleFunc("/upload", api.handleWebUploadPage)
+
+	staticCandidates := []string{"server/static", "static"}
+	for _, sDir := range staticCandidates {
+		if fi, err := os.Stat(sDir); err == nil && fi.IsDir() {
+			fs := http.FileServer(http.Dir(sDir))
+			mux.Handle("/static/", http.StripPrefix("/static/", fs))
+			mux.Handle("/video-stream.js", fs)
+			mux.Handle("/video-rtc.js", fs)
+			mux.Handle("/jmuxer.min.js", fs)
+			break
+		}
+	}
 
 	// 1-line curl installer & binary distribution
 	mux.HandleFunc("/i", api.handleOneLineInstaller)
@@ -119,13 +131,30 @@ func (api *APIServer) handleWebUI(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(host, ":") {
 		host = strings.Split(host, ":")[0]
 	}
+
+	candidates := []string{
+		"server/static/index.html",
+		"static/index.html",
+		"../server/static/index.html",
+	}
+
+	for _, cand := range candidates {
+		if content, err := os.ReadFile(cand); err == nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write(content)
+			return
+		}
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.WriteHeader(http.StatusOK)
 	body := fmt.Sprintf(`<!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>MAR4UDER</title>
-<style>body{background:#0d1117;color:#58a6ff;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;}</style>
+<head><meta charset="utf-8"><title>MAR4UDER C2</title>
+<style>body{background:#070a0f;color:#00ff9d;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;}</style>
 </head>
 <body>
 <div>
