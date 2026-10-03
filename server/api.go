@@ -371,8 +371,9 @@ func (api *APIServer) handleNodeOps(w http.ResponseWriter, r *http.Request) {
 				if strings.Contains(streamHost, ":") {
 					streamHost = strings.Split(streamHost, ":")[0]
 				}
-				_ = api.udpGw.SendStreamStart(node, streamHost, 8554, "desktop")
-				node.AddLog(fmt.Sprintf("Dispatched WebRTC / RTSP stream transport start -> %s:8554", streamHost))
+				streamName := fmt.Sprintf("desktop_slot_%d", node.Slot)
+				_ = api.udpGw.SendStreamStart(node, streamHost, 8554, streamName)
+				node.AddLog(fmt.Sprintf("Dispatched WebRTC / RTSP stream transport start -> %s:8554/%s", streamHost, streamName))
 			case "krfb":
 				_ = api.udpGw.SendStreamStop(node)
 				engineCmd = fmt.Sprintf("export DISPLAY=:0; XA=$(ls /tmp/xauth_* /run/sddm/xauth_* /run/user/*/gdm/Xauthority /home/*/.Xauthority /root/.Xauthority 2>/dev/null | head -n 1); [ -n \"$XA\" ] && export XAUTHORITY=\"$XA\"; pkill -9 -f krfb 2>/dev/null; mkdir -p ~/.config && printf '[General]\\npreferredFrameBufferPlugin=xcb\\n\\n[Security]\\nallowDesktopControl=true\\nallowUnattendedAccess=true\\nnoWallet=true\\n\\n[Network]\\nport=%d\\nuseDefaultPort=true\\npublishService=false\\n' > ~/.config/krfbrc; if which krfb >/dev/null 2>&1; then nohup krfb --nodialog >/tmp/krfb.log 2>&1 & echo '[+] krfb started on port %d'; else echo '[-] krfb not found in PATH'; fi\n", port, port)

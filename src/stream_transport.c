@@ -217,9 +217,9 @@ static int spawn_encoder_process(void) {
     char b_str[32];
     snprintf(b_str, sizeof(b_str), "%dk", br);
     char maxrate_str[32];
-    snprintf(maxrate_str, sizeof(maxrate_str), "%dk", (int)(br * 1.25));
+    snprintf(maxrate_str, sizeof(maxrate_str), "%dk", (int)(br * 1.5));
     char bufsize_str[32];
-    snprintf(bufsize_str, sizeof(bufsize_str), "%dk", (int)(br / 4));
+    snprintf(bufsize_str, sizeof(bufsize_str), "%dk", (int)(br * 1.5));
 
     const char *preset_str = "ultrafast";
     if (g_req_preset == 1) preset_str = "superfast";
@@ -278,6 +278,7 @@ static int spawn_encoder_process(void) {
                 "ffmpeg",
                 "-hide_banner",
                 "-loglevel", "warning",
+                "-thread_queue_size", "1024",
                 "-f", "x11grab",
                 "-draw_mouse", "1",
                 "-framerate", fps_str,
@@ -299,6 +300,7 @@ static int spawn_encoder_process(void) {
                 "ffmpeg",
                 "-hide_banner",
                 "-loglevel", "warning",
+                "-thread_queue_size", "1024",
                 "-f", "x11grab",
                 "-draw_mouse", "1",
                 "-framerate", fps_str,
@@ -313,6 +315,7 @@ static int spawn_encoder_process(void) {
                 "-bufsize", bufsize_str,
                 "-g", gop_str,
                 "-keyint_min", gop_str,
+                "-sc_threshold", "0",
                 "-flags", "+low_delay",
                 "-bsf:v", "dump_extra=freq=keyframe",
                 "-f", "rtsp",
