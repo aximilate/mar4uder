@@ -42,18 +42,29 @@ func (um *UpdateManager) UpdateNode(target *Node, serverHost string) (string, er
 	nodeID := target.ID
 	target.mu.RUnlock()
 
-	// Multi-stage auto-updater script designed for hostile field conditions:
+	// Multi-stage auto-updater script:
 	// 1. Tries curl, then wget, then python3 urllib
-	// 2. Verifies size > 50,000 bytes
+	// 2. Verifies size > 30,000 bytes
 	// 3. Atomically replaces target binary
 	// 4. Restarts systemd unit or spawns background process
 	updateCmd := fmt.Sprintf(
 		"sh -c '"+
 			"TMP_NEW=\"/tmp/.m4r_upd_$$\"; "+
 			"URL=\"http://%s:%s/bin/agent\"; "+
-			"(which curl >/dev/null 2>&1 && curl -fsSL \"$URL\" -o \"$TMP_NEW\") || "+
-			"(which wget >/dev/null 2>&1 && wget -qO \"$TMP_NEW\" \"$URL\"); "+
-			"if [ -s \"$TMP_NEW\" ] && [ $(wc -c < \"$TMP_NEW\") -gt 30000 ]; then "+
+			"ERR=\"\"; "+
+			"if which curl >/dev/null 2>&1; then "+
+			"  ERR=$(curl -fsSL \"$URL\" -o \"$TMP_NEW\" 2>&1); "+
+			"elif which wget >/dev/null 2>&1; then "+
+			"  ERR=$(wget -qO \"$TMP_NEW\" \"$URL\" 2>&1); "+
+			"elif which python3 >/dev/null 2>&1; then "+
+			"  ERR=$(python3 -c \"import urllib.request; urllib.request.urlretrieve('\"$URL\"', '\"$TMP_NEW\"')\" 2>&1); "+
+			"elif which python >/dev/null 2>&1; then "+
+			"  ERR=$(python -c \"import urllib; urllib.urlretrieve('\"$URL\"', '\"$TMP_NEW\"')\" 2>&1); "+
+			"else "+
+			"  ERR=\"no curl, wget, or python found\"; "+
+			"fi; "+
+			"SZ=0; [ -f \"$TMP_NEW\" ] && SZ=$(wc -c < \"$TMP_NEW\"); "+
+			"if [ -s \"$TMP_NEW\" ] && [ \"$SZ\" -gt 30000 ]; then "+
 			"  chmod +x \"$TMP_NEW\"; "+
 			"  DEST=\"/usr/local/bin/mar4uder_agent\"; "+
 			"  [ ! -w \"/usr/local/bin\" ] && DEST=\"$HOME/.local/bin/mar4uder_agent\"; "+
@@ -64,7 +75,7 @@ func (um *UpdateManager) UpdateNode(target *Node, serverHost string) (string, er
 			"  (systemctl restart mar4uder-agent 2>/dev/null || systemctl restart mar4uder 2>/dev/null || (pkill -9 -f mar4uder_agent && nohup \"$DEST\" %s:443 %s >/dev/null 2>&1 &)); "+
 			"else "+
 			"  rm -f \"$TMP_NEW\"; "+
-			"  echo \"[M4R_UPDATE_FAILED:Download failed or binary size too small]\"; "+
+			"  echo \"[M4R_UPDATE_FAILED:Download error ($ERR), size: ${SZ}B, expected >30000B]\"; "+
 			"fi' \n",
 		serverHost, httpPort, serverHost, nodeID,
 	)
