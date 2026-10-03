@@ -1,0 +1,49 @@
+log:
+  level: info
+
+streams:
+  desktop: ""
+  desktop_slot_1: ""
+  desktop_slot_2: ""
+  desktop_slot_3: ""
+  desktop_slot_4: ""
+  desktop_slot_5: ""
+  desktop_slot_6: ""
+  desktop_slot_7: ""
+  desktop_slot_8: ""
+  desktop_slot_9: ""
+  desktop_slot_10: ""
+  desktop_slot_11: ""
+  desktop_slot_12: ""
+  desktop_slot_13: ""
+  desktop_slot_14: ""
+  desktop_slot_15: ""
+  desktop_slot_16: ""
+  desktop_slot_17: ""
+  desktop_slot_18: ""
+  desktop_slot_19: ""
+  desktop_slot_20: ""
+  desktop_slot_21: ""
+  desktop_slot_22: ""
+  desktop_slot_23: ""
+  desktop_slot_24: ""
+  desktop_slot_25: ""
+  desktop_slot_26: ""
+  desktop_slot_27: ""
+  desktop_slot_28: ""
+  desktop_slot_29: ""
+  desktop_slot_30: ""
+  desktop_slot_31: ""
+  desktop_slot_32: ""
+
+api:
+  listen: ":1984"
+
+rtsp:
+  listen: ":8554"
+
+webrtc:
+  listen: ":8555"
+  candidates:
+    - 104.143.206.163:8555
+    - stun:8555

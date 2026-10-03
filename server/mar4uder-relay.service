@@ -1,0 +1,15 @@
+[Unit]
+Description=mar4uder Resilient Terminal Relay Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/mar4uder
+ExecStart=/usr/bin/python3 /opt/mar4uder/server/relay_server.py --udp-port 443 --tcp-port 9000 --pin 1337
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

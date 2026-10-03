@@ -1,24 +1,6 @@
-# MAR4UDER // Control Plane & Agent Engine
+# MAR4UDER // Control Plane & Resilient Agent Engine
 
-Комплекс удалённого администрирования, интерактивного управления терминалами (PTY/ConPTY) и стриминга рабочего стола (VNC/Framebuffer) через NAT и обратные туннели.
-
----
-
-## Быстрый старт на VPS (1-Line Auto-Installer)
-
-Для развертывания ядра сервера, веб-панели и шлюза на любой Linux-машине (Ubuntu, Debian, CentOS, Alpine, Arch):
-
-```bash
-# Клонировать репозиторий и запустить установщик:
-sudo bash install.sh
-```
-
-Установщик автоматически:
-- Скомпилирует или установит бинарник ядра [`mar4uder-server`](server/mar4uder-server-linux) в `/usr/local/bin/`.
-- Выдаст capability `cap_net_bind_service` для привязки к порту 443 без root.
-- Сгенерирует конфигурацию `/etc/mar4uder/config.json` с криптографическим токеном доступа.
-- Настроит и запустит systemd-сервис `mar4uder-server.service`.
-- Выведет ссылку на Web UI (`http://<IP>:8080`) и токен авторизации.
+Комплекс удалённого администрирования, управления интерактивными псевдотерминалами (PTY) и стриминга рабочего стола (VNC / Framebuffer / WebRTC) через NAT и обратные туннели без внешних зависимостей.
 
 ---
 
@@ -27,117 +9,128 @@ sudo bash install.sh
 ```
                  +-------------------------------------------------------+
                  |            MAR4UDER CORE (Go Daemon)                  |
-                 |      - UDP Gateway (:443)  <- Heartbeats / PTY        |
-                 |      - TCP Gateway (:5900) <- Dirty Tile Stream       |
-                 |      - REST Control API    <- /api/v1/nodes           |
-                 |      - WebSocket Bridges   <- /ws/terminal, /desktop  |
-                 |      - Embedded Web UI     <- Responsive Console      |
+                 |      - UDP Gateway (:443)  <- Heartbeats / PTY / RPC  |
+                 |      - TCP Gateway (:443)  <- Direct Tile Stream      |
+                 |      - REST Control API    <- /api/v1/nodes (:8080)   |
+                 |      - Operator Console    <- TCP TUI (:9000)         |
+                 |      - RFB Gateway         <- Standard VNC (:5900)    |
                  +-------------------------------------------------------+
-                                    ^               ^
-                     Бинарный туннель |               | Сессия оператора
-                 (Heartbeat, PTY, VNC) |               | (Web / Desktop / Mobile)
-                                    v               v
-    +--------------------------------------+      +-----------------------------+
-    |           mar4uder_agent             |      |       Оператор / UI         |
-    |  - Linux / Windows статический бинарь |      |  - Браузер (HTML5 Canvas/WS)|
-    |  - PTY / ConPTY подсистема           |      |  - REST API интеграции      |
-    |  - VNC / Framebuffer dirty tiles     |      +-----------------------------+
-    |  - Инжекция ввода (uinput / XTest)   |
-    +--------------------------------------+
+                                     ^               ^
+                      Бинарный туннель |               | Сессия оператора
+                 (Heartbeat, PTY, RPC)|               | (CLI / TUI / REST / VNC)
+                                     v               v
+     +--------------------------------------+      +-----------------------------+
+     |           mar4uder_agent             |      |       Оператор / Клиенты    |
+     |  - Статический C-бинарник (Linux)    |      |  - Windows: .\m4r.ps1       |
+     |  - Мультиплексированные PTY сессии   |      |  - Linux: m4r / nc / telnet |
+     |  - Динамический X11 / dev-fb захват  |      |  - C-клиент: mar4uder_client|
+     |  - Pixel-RLE компрессия тайлов       |      |  - Внешний VNC Viewer       |
+     |  - WebRTC/RTSP стриминг (FFmpeg)     |      +-----------------------------+
+     +--------------------------------------+
 ```
 
 ---
 
-## Аудит исходного кода агента (C Sources Audit)
+## Сетевые порты и протоколы
 
-В ходе углубленного анализа исходников агента на Си (`src/`) выявлены следующие архитектурные особенности, узкие места и баги:
-
-### 1. Скрытая зависимость от Python в C-агенте ([`src/vnc_server.c`](src/vnc_server.c#L332-L372))
-- **Проблема**: Несмотря на статическую сборку агента через `musl-gcc`, функция `vnc_fb_init()` при перехвате ввода X11 делает `fork()` и выполняет `execlp("python3", "python3", "-u", "-c", worker_py, NULL)`.
-- **Последствия**: Если на целевой машине не установлен `python3` или отсутствуют системные библиотеки `libX11.so.6` / `libXtst.so.6`, агент молча теряет возможность эмулировать ввод мыши и клавиатуры. Это нарушает принцип "автономного бинарника без зависимостей".
-- **Рекомендация**: Заменить спавн Python-воркера на прямой вызов X11 функций через `dlopen("libXtst.so.6")` или прямую запись в `/dev/uinput` в Си-коде.
-
-### 2. Уязвимость командной инъекции через `popen` ([`src/vnc_server.c`](src/vnc_server.c#L254-L262))
-- **Проблема**: В `detect_screen_resolution()` строка для `popen` формируется через `snprintf`:
-  ```c
-  snprintf(cmd, sizeof(cmd), "DISPLAY=%s XAUTHORITY=%s xwininfo -root 2>/dev/null", display, xauth);
-  FILE *fp = popen(cmd, "r");
-  ```
-- **Последствия**: Если переменная окружения или путь к файлу авторизации содержит спецсимволы shell (пробелы, кавычки, `;`), команда ломается либо выполняет инъекцию аргументов.
-- **Рекомендация**: Использовать прямое чтение заголовка через Xlib (`XGetGeometry`) или проверять/экранировать параметры перед вызовом.
-
-### 3. Небезопасное создание временного файла ([`src/pty_session.c`](src/pty_session.c#L59-L67))
-- **Проблема**: При старте терминала создается файл `/tmp/.mar4uder_inputrc` через `fopen(..., "w")`.
-- **Последствия**: В многопользовательской системе любой локальный пользователь может заранее создать символическую ссылку `/tmp/.mar4uder_inputrc` на критичный системный файл (CWE-377, Symlink Attack).
-- **Рекомендация**: Использовать `mkstemp()` или передавать конфигурацию через переменную окружения `INPUTRC` напрямую.
-
-### 4. Утечка зомби-процессов при закрытии PTY ([`src/pty_session.c`](src/pty_session.c#L140-L144))
-- **Проблема**: Функция `pty_session_close()` отправляет `kill(child_pid, SIGHUP)` и немедленно вызывает неблокирующий `waitpid(child_pid, &status, WNOHANG)`.
-- **Последствия**: Если процесс оболочки не успел завершиться за 0 мс или игнорирует `SIGHUP`, `waitpid` возвращает 0, а процесс превращается в зомби (`<defunct>`) и зависает в памяти.
-- **Рекомендация**: Добавить цикл ожидания с таймаутом и эскалацией до `SIGKILL`.
-
-### 5. Баг закрытия сессии в Windows-агенте ([`src/agent_windows.c`](src/agent_windows.c#L223-L226))
-- **Проблема**: При получении пакета `MSG_SESSION_CLOSE` агент Windows только выводит лог:
-  ```c
-  case MSG_SESSION_CLOSE: {
-      printf("[*] Operator detached session\n");
-      break;
-  }
-  ```
-  В отличие от Linux-агента, здесь **не вызывается** `pty_session_close(&g_pty)` и не сбрасывается `g_active_session_id`.
-- **Последствия**: Процесс ConPTY (`cmd.exe` / `powershell.exe`) остается висеть в памяти навсегда, утекают дескрипторы и память.
-- **Рекомендация**: Добавить вызов `pty_session_close(&g_pty); g_active_session_id = 0;`.
-
-### 6. Задержка опроса и переполнение таймера в Windows ([`src/agent_windows.c`](src/agent_windows.c#L152,L234))
-- **Проблема**: В основном цикле используется `Sleep(20)` для ограничения CPU, что дает фиксированную искусственную задержку 20 мс на обработку входящих пакетов PTY. Для таймеров используется 32-битный `GetTickCount()`.
-- **Последствия**: `GetTickCount()` переполняется через 49.7 дней аптайма системы, ломая вычисление интервалов хартбитов.
-- **Рекомендация**: Использовать `select()` / `WSAWaitForMultipleEvents` для мгновенной реакции на входящие пакеты и `GetTickCount64()`.
+| Порт | Протокол | Назначение |
+|---|---|---|
+| `443` | **UDP** | Основной агентский туннель (регистрация, хартбиты, PTY, RPC) |
+| `443` | **TCP** | Высокоскоростная передача dirty-тайлов экрана (Direct VNC stream) |
+| `8080` | **TCP** | REST API v1, WebSocket-мосты, скрипты развертывания |
+| `9000` | **TCP** | Интерактивная консоль оператора (TUI через `nc` / `telnet` / `m4r.ps1`) |
+| `5900` | **TCP** | Стандартный RFB/VNC шлюз (RFC 6143) для внешних просмотрщиков |
 
 ---
 
-## Control API & Web-сокеты
+## Быстрый старт
 
-Сервер предоставляет полнофункциональный REST API и WebSocket-мосты с авторизацией по Bearer-токену:
+### 1. Сервер (Linux VPS)
 
-### REST API
-
-- `GET /api/v1/nodes` — Список всех узлов (ID, хостнейм, ОС, статус Online/Offline, пинг, активные сессии).
-- `GET /api/v1/nodes/{id}` — Полные параметры конкретного узла.
-- `POST /api/v1/nodes/{id}/pty/open` — Открытие PTY сессии (`{"cols": 120, "rows": 40}`).
-- `POST /api/v1/nodes/{id}/pty/close` — Завершение терминальной сессии.
-- `GET /api/v1/stats` — Телеметрия сервера (аптайм, RX/TX байты, количество пакетов).
-- `GET /api/v1/config` — Текущие настройки сервера (порты, таймауты).
-
-### WebSocket-мосты
-
-- `/ws/terminal?node={id}&token={token}`:
-  - Двунаправленный мост между веб-терминалом и удаленным PTY.
-  - Поддерживает управляющие сообщения ресайза: `{"type": "resize", "cols": 120, "rows": 40}`.
-- `/ws/desktop?node={id}&token={token}`:
-  - Графический стриминг: передача бинарных пакетов с dirty-тайлами (64x64 пикселя) и Pixel-RLE компрессией прямо на HTML5 Canvas.
-  - Передача событий мыши (координаты X/Y, кнопки) и клавиатуры обратно на агент.
-
----
-
-## Сборка бинарников
-
-### Сборка сервера (Go)
 ```bash
+# Развертывание сервера:
+sudo bash install.sh
+
+# Или ручная сборка ядра:
 cd server
-# Нативная сборка (под текущую ОС)
 go build -o mar4uder-server .
-
-# Кросс-компиляция под Linux (для развертывания на VPS)
-GOOS=linux GOARCH=amd64 go build -o mar4uder-server-linux .
+./mar4uder-server
 ```
 
-### Сборка агентов (C)
+### 2. Запуск C-агента на целевой машине
+
 ```bash
-# Статический Linux агент (musl-gcc)
+# Сборка агента:
 make linux
 
-# Windows агент (.exe) через MinGW
-make bin/mar4uder_agent.exe
+# Запуск с указанием сервера (или пула серверов для отказоустойчивости):
+./bin/mar4uder_agent "relay.example.com:443" "my-node-01"
+
+# С пулом failover-серверов:
+./bin/mar4uder_agent "relay1.example.com:443,relay2.example.com:443" "my-node-01"
 ```
-#   m a r 4 u d e r  
- 
+
+### 3. Управление оператора
+
+#### Windows PowerShell CLI (`m4r.ps1`):
+```powershell
+# Список нод:
+.\m4r.ps1 list
+
+# Интерактивная TUI консоль (встроенный сокет без внешних утилит):
+.\m4r.ps1
+
+# Удаленное выполнение команды:
+.\m4r.ps1 exec mos-ku1eet "uname -a && uptime"
+
+# Просмотр файлов на ноде:
+.\m4r.ps1 fs mos-ku1eet /var/log
+
+# Скачивание файла с ноды:
+.\m4r.ps1 get mos-ku1eet /etc/os-release ./os-release.txt
+
+# Загрузка файла на ноду:
+.\m4r.ps1 put mos-ku1eet ./script.sh /tmp/script.sh
+```
+
+#### Linux CLI (`m4r` / `nc`):
+```bash
+# Быстрая установка консольной утилиты:
+curl -fsSL http://<SERVER_IP>:8080/m4r | bash
+
+# Использование:
+m4r list
+m4r exec <node_id> "whoami"
+m4r fs <node_id> /home
+m4r
+```
+
+---
+
+## Возможности агента (`mar4uder_agent`)
+
+- **PTY Terminal Subsystem:** Создание независимых изолированных сессий через `forkpty()`, автонастройка цветовой гаммы `xterm-256color` и безопасное отключение bracketed paste без утечки временных файлов.
+- **Failover & Dynamic Endpoint Switching:** Ротация серверов при обрыве связи и горячая смена хоста через триггер-файл `/tmp/.mar4uder_endpoint`.
+- **Direct Screen Capture:** Автоматическое обнаружение X11 через `/proc/*/environ` и `/proc/*/cmdline`, динамическая загрузка `libX11.so.6` (`XGetImage`), фолбэк на `/dev/fb0` и виртуальный холст.
+- **Input Injection:** Эмуляция перемещения указателя, кликов и нажатий клавиш через `libXtst.so.6` (`XTestFakeMotionEvent`, `XTestFakeKeyEvent`) и `/dev/uinput`.
+- **Pixel-RLE 32-bit Compression:** Высокоэффективное сжатие тайлов экрана с автоматическим контролем переполнения буфера.
+- **WebRTC / RTSP Low-Latency Stream:** Управление процессом H.264 кодирования (`ffmpeg` x11grab / VAAPI) с защитой от бесконечных циклов перезапуска.
+- **Native File & Command RPC:** Потоковая передача файлов чанками по 1024 байта, рекурсивное создание каталогов, защищенная валидация путей (Path Traversal Protection) и неблокирующее исполнение команд с контролем таймаутов.
+
+---
+
+## Сборка проекта
+
+```bash
+# Сборка Linux-агента и клиента:
+make linux
+
+# Очистка артефактов сборки:
+make clean
+```
+
+---
+
+## REST API & Документация
+
+Полная спецификация REST API v1, WebSocket-мостов и структуры пакетов M4RD доступна в файле [`API.md`](API.md).
